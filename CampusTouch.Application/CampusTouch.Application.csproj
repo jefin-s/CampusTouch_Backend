@@ -6,4 +6,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\Exceptions\" />
+    <Folder Include="Features\Authentication\Commands\" />
+    <Folder Include="Features\Authentication\Queries\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CampusTouch.Domain\CampusTouch.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

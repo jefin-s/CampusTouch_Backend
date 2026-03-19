@@ -6,4 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CampusTouch.API\CampusTouch.API.csproj" />
+    <ProjectReference Include="..\CampusTouch.Application\CampusTouch.Application.csproj" />
+    <ProjectReference Include="..\CampusTouch.Domain\CampusTouch.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
