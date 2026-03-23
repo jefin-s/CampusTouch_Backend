@@ -1,12 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CampusTouch.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
 
 namespace CampusTouch.Infrastructure
 {
-    internal class DepencdencyInjection
+    public static  class DepencdencyInjection
     {
+
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services,IConfiguration configuration) 
+        
+        {
+            services.AddDbContext<ApplicationDbContext>(options =>
+               options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+           
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            return services;
+
+        }
     }
 }
