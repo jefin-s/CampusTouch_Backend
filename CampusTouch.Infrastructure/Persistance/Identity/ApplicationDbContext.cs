@@ -1,9 +1,8 @@
-﻿
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace CampusTouch.Infrastructure.Identity
+namespace CampusTouch.Infrastructure.Persistance.Identity
 {
     public  class ApplicationDbContext:IdentityDbContext<ApplicationUser>
     {
@@ -14,3 +13,4 @@ namespace CampusTouch.Infrastructure.Identity
         }
     }
 }
+ 

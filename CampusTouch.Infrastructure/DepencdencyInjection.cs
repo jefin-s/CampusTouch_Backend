@@ -1,4 +1,7 @@
-﻿using CampusTouch.Infrastructure.Identity;
+﻿using CampusTouch.Application.Interfaces;
+using CampusTouch.Infrastructure.Identity;
+using CampusTouch.Infrastructure.Persistance.Identity;
+using CampusTouch.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +23,12 @@ namespace CampusTouch.Infrastructure
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+            services.AddScoped<IIdentityService, IdentityService>();
+
+            services.AddScoped<IJWTService,JwtServices>();
 
             return services;
+
 
         }
     }

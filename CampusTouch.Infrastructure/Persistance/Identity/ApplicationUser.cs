@@ -1,8 +1,6 @@
-﻿
+﻿using Microsoft.AspNetCore.Identity;
 
-using Microsoft.AspNetCore.Identity;
-
-namespace CampusTouch.Infrastructure.Identity
+namespace CampusTouch.Infrastructure.Persistance.Identity
 {
     public  class ApplicationUser:IdentityUser
     {
