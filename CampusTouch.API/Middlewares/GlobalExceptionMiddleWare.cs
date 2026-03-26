@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-
+﻿using CampusTouch.Application.Common.Exceptions;
+using FluentValidation;
 namespace CampusTouch.API.Middlewares
 {
-    // You may need to install the Microsoft.AspNetCore.Http.Abstractions package into your project
     public class GlobalExceptionMiddleWare
     {
         private readonly RequestDelegate _next;
@@ -14,19 +11,48 @@ namespace CampusTouch.API.Middlewares
             _next = next;
         }
 
-        public Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-
-            return _next(httpContext);
+            try
+            {
+                await _next(httpContext);
+            }
+            catch (FluentValidation.ValidationException ex)
+            {
+                await HandleException(httpContext, 400, ex.Message);
+            }
+            catch (UnauthorizedException ex)
+            {
+                await HandleException(httpContext, 401, ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                await HandleException(httpContext, 404, ex.Message);
+            }
+            catch (BuisnessRuleException ex)
+            {
+                await HandleException(httpContext, 409, ex.Message);
+            }
+            catch (Exception)
+            {
+                await HandleException(httpContext, 500, "Internal server error");
+            }
         }
-    }
 
-    // Extension method used to add the middleware to the HTTP request pipeline.
-    public static class GlobalExceptionMiddleWareExtensions
-    {
-        public static IApplicationBuilder UseGlobalExceptionMiddleWare(this IApplicationBuilder builder)
+        private static async Task HandleException(
+            HttpContext context,
+            int statusCode,
+            string message)
         {
-            return builder.UseMiddleware<GlobalExceptionMiddleWare>();
+            context.Response.StatusCode = statusCode;
+            context.Response.ContentType = "application/json";
+
+            await context.Response.WriteAsJsonAsync(new
+            {
+                success = false,
+                statusCode = statusCode,
+                message = message
+            });
         }
     }
 }

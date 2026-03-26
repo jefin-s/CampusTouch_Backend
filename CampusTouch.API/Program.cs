@@ -1,10 +1,16 @@
+﻿using CampusTouch.API.Middlewares;
+using CampusTouch.Application.Common.Behaviors;
+using CampusTouch.Application.Features.Authentication.Vaidators;
 using CampusTouch.Infrastructure;
+using CampusTouch.Infrastructure.Persistance.Identity;
 using CampusTouch.Infrastructure.Persistance.Seed;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+
 //using CampusTouch.Application.Features.Authentication.Commands.Register;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +21,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddMediatR(typeof(RegisterUserCommand).Assembly);
+
+
+// ✅ Correct MediatR (v12)
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
+
+// ✅ FluentValidation
+builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserCommandValidator).Assembly);
+
+// ✅ Pipeline (VERY IMPORTANT)
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -68,9 +84,14 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var services = scope.ServiceProvider;
+
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
     await RoleSeeder.SeedAsync(roleManager);
-} 
+    await AdminSeeder.SeedAdminAsync(userManager);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -78,7 +99,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<GlobalExceptionMiddleWare>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
