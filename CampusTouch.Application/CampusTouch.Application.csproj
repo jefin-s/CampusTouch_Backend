@@ -8,6 +8,10 @@
 
   <ItemGroup>
     <Folder Include="Features\Authentication\Queries\" />
+    <Folder Include="Features\Students\Commands\" />
+    <Folder Include="Features\Students\DTOs\" />
+    <Folder Include="Features\Students\Interfaces\" />
+    <Folder Include="Features\Students\Queries\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,8 +20,7 @@
     <PackageReference Include="MediatR" Version="12.1.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CampusTouch.Domain\CampusTouch.Domain.csproj" />
+  <ItemGroup>    <ProjectReference Include="..\CampusTouch.Domain\CampusTouch.Domain.csproj" />
   </ItemGroup>
 
 </Project>

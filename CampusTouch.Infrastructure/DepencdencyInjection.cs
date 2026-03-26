@@ -3,9 +3,11 @@ using CampusTouch.Infrastructure.Identity;
 using CampusTouch.Infrastructure.Persistance.Identity;
 using CampusTouch.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Data;
 
 
 namespace CampusTouch.Infrastructure
@@ -25,7 +27,11 @@ namespace CampusTouch.Infrastructure
                 .AddDefaultTokenProviders();
             services.AddScoped<IIdentityService, IdentityService>();
 
+
             services.AddScoped<IJWTService,JwtServices>();
+            services.AddScoped<IDbConnection>(sp =>
+            new SqlConnection(configuration.GetConnectionString("DefaultConnection")));
+
 
             return services;
 
