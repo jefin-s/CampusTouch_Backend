@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CampusTouch.Application.Features.Departments.DTOs;
+using MediatR;
+
 
 namespace CampusTouch.Application.Features.Departments.Queries
 {
-    internal class GetDepartementByIdQuery
-    {
-    }
+    public record GetDepartementByIdQuery(int Id):IRequest<Deparetment_Response_DTO?>;
+    
 }

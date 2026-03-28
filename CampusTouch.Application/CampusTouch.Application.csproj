@@ -8,6 +8,9 @@
 
   <ItemGroup>
     <Folder Include="Features\Authentication\Queries\" />
+    <Folder Include="Features\Program\Commands\" />
+    <Folder Include="Features\Program\DTOs\" />
+    <Folder Include="Features\Program\Queries\" />
     <Folder Include="Features\Students\Interfaces\" />
   </ItemGroup>
 
