@@ -4,6 +4,7 @@ using CampusTouch.Application.Features.Authentication.Commands.Register;
 using CampusTouch.Application.Features.Authentication.Commands.Login;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using CampusTouch.Application.Features.Authentication.Commands.RefreshToken;
 
 namespace CampusTouch.API.Controllers
 {
@@ -45,5 +46,21 @@ namespace CampusTouch.API.Controllers
                 Data = result
             });
         }
+
+        [HttpPost("refresh")]
+
+        public async Task<ActionResult> Refresh([FromBody] RefreshTokenCommand request)
+        {
+            var result = await _mediator.Send(
+           new RefreshTokenCommand(request.RefreshToken));
+
+            return Ok(new ApiResponse<LoginResponseDTO>
+            {
+                Success=true,
+                Message="token refreshed successfully",
+                Data=result
+            } );
+        }
+
     }
 }

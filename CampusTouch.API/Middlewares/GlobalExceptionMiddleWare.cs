@@ -17,7 +17,12 @@ namespace CampusTouch.API.Middlewares
             {
                 await _next(httpContext);
             }
+            
             catch (FluentValidation.ValidationException ex)
+            {
+                await HandleException(httpContext, 400, ex.Message);
+            }
+            catch(CampusTouch.Application.Common.Exceptions.ValidationException ex)
             {
                 await HandleException(httpContext, 400, ex.Message);
             }

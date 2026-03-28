@@ -1,6 +1,7 @@
 ﻿using CampusTouch.Application.Interfaces;
 using CampusTouch.Infrastructure.Identity;
 using CampusTouch.Infrastructure.Persistance.Identity;
+using CampusTouch.Infrastructure.Persistance.Repositories;
 using CampusTouch.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
@@ -26,6 +27,10 @@ namespace CampusTouch.Infrastructure
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
             services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
+            services.AddScoped<ICurrentUserService,CurrentUserServices>();
+            services.AddScoped<IDepartementRepository,DepartementRepository>();
 
 
             services.AddScoped<IJWTService,JwtServices>();
@@ -39,3 +44,4 @@ namespace CampusTouch.Infrastructure
         }
     }
 }
+    

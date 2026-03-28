@@ -9,12 +9,15 @@ namespace CampusTouch.Application.Interfaces
             string fullName,
             string email,
             string password,
-            string phoneNumber
+            string phoneNumber,
+            string username
         );
 
         Task<LoginResponseDTO> LoginAsync(
           string email,
           string password
       );
+
+        Task<LoginResponseDTO> RefreshTokenAsync(string refreshToken);
     }
 }

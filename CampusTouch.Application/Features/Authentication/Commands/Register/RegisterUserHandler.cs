@@ -24,7 +24,8 @@ public  class RegisterUserHandler:IRequestHandler<RegisterUserCommand,string>
             dto.FullName,
             dto.Email,
             dto.Password,
-            dto.PhoneNumber
+            dto.PhoneNumber,
+            dto.Username
         );
 
     }

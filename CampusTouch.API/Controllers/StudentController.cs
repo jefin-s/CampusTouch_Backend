@@ -1,11 +1,113 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using CampusTouch.API.Models.Students;
+using CampusTouch.Application.Common;
+using CampusTouch.Application.Features.Students.Commands;
+using CampusTouch.Application.Features.Students.DTOs;
+    using CampusTouch.Application.Features.Students.Queries.GetAllStudents;
+using CampusTouch.Application.Features.Students.Queries.GetStudentsById;
+using CampusTouch.Application.Interfaces;
+using MediatR;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Identity.Client;
 
 namespace CampusTouch.API.Controllers
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    public class StudentController : ControllerBase
     {
+        [Route("api/[controller]")]
+        [ApiController]
+        public class StudentController : ControllerBase
+        {
+
+            private readonly IMediator _mediator;
+        private readonly ICloudinaryService _cloudinaryService;
+            public StudentController(IMediator mediator,ICloudinaryService cloudinaryService)
+            {
+                    _mediator = mediator;
+                    _cloudinaryService = cloudinaryService;
+            }
+            [HttpGet]
+
+            public async Task<ActionResult> GetAllStudents([FromQuery] int pageNumber=1, [FromQuery]  int pageSize = 10, [FromQuery] string?Search=null)
+            {
+                var result = await _mediator.Send(new GetAllStudentsQuery(pageNumber,pageSize,Search));
+                if (result==null||!result.Any())  
+                {
+                    return NotFound(new ApiResponse<IEnumerable<StudentResponseDTO>>
+                    {
+                        Success = false,
+                        Message = "No students found",
+                        Data = null
+                    });
+                }
+                var response = new ApiResponse<IEnumerable<StudentResponseDTO>>
+                {
+                    Success = true,
+                    Message = "Student fetched Successfully",
+                    Data = result
+                };
+               return Ok(response);
+            }
+        [HttpGet("{id}")]
+        public async Task <ActionResult> GetStudentById(int id )
+        {
+            var result = await _mediator.Send(new GetStudentByIdQuery(id));
+            if (result == null)
+            {
+                return NotFound(new ApiResponse<string>
+                {
+                    Success= false,
+                    Message="Student Not Found"
+                });
+            }
+
+            return Ok(new ApiResponse<StudentResponseDTO>
+            {
+                Success=true,
+                Message="Student detailed fetched succefully",
+                Data=result
+            });
+        }
+        [HttpPost]
+        public async Task<IActionResult> CreateStudent([FromForm] CreateStudentRequest request)
+        {
+            string? imageUrl = null;
+
+            if (request.ProfileImage != null)
+            {
+                using var stream = request.ProfileImage.OpenReadStream();
+
+                imageUrl = await _cloudinaryService.UploadImageAsync(
+                    stream,
+                    request.ProfileImage.FileName
+                );
+            }
+
+            var command = new CreateStudentCommand(
+                request.AdmissionNumber,
+                request.CourseId,
+                request.DepartmentId,
+                request.AdmissionDate,
+                request.FirstName,
+                request.LastName,
+                request.DateOfBirth,
+                request.Gender,
+                request.PhoneNumber,
+                request.Email,
+                request.Address,
+                request.GuardianName,
+                request.GuardianPhone,
+                request.BloodGroup,
+                imageUrl
+            );
+
+            var result = await _mediator.Send(command);
+
+            return Ok(new ApiResponse<bool>
+            {
+                Success = result,
+                Message = "Student created successfully",
+                Data = result
+            });
+        }
     }
-}
+    }
