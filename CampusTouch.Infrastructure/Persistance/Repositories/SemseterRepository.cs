@@ -52,11 +52,32 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id,string userid)
         {
-            var query = "UPDATE Semester SET IsActive = 0, UpdatedAt = GETDATE() WHERE Id = @Id";
-            var rowsAffected = await _dbconnection.ExecuteAsync(query, new { Id = id });
+            var query = @"UPDATE Semester 
+                  SET IsDeleted = 1,
+                      DeletedAt = GETUTCDATE(),
+                      DeletedBy = @UserId
+                  WHERE Id = @Id";
+            var rowsAffected = await _dbconnection.ExecuteAsync(query, new { Id = id,userid=userid });
             return rowsAffected > 0;
+        }
+
+        public async Task<bool> SemExist(int courseId, int orderNumber)
+        {
+            var query = @"SELECT COUNT(1)
+                  FROM Semester
+                  WHERE CourseId = @CourseId
+                  AND OrderNumber = @OrderNumber
+                  AND IsDeleted = 0";
+
+            var count = await _dbconnection.ExecuteScalarAsync<int>(query, new
+            {
+                CourseId = courseId,
+                OrderNumber = orderNumber
+            });
+
+            return count > 0;
         }
     }
 }

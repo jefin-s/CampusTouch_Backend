@@ -19,10 +19,16 @@ namespace CampusTouch.Domain.Entities
         public int SemesterId { get; set; }
 
         public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
+        public string  updatedby { get; set; }
+        public string creatdby { get; set; }
+        public DateTime deletedAt { get; set; }
+
+        public string deletedby { get; set; }
 
     }
 }

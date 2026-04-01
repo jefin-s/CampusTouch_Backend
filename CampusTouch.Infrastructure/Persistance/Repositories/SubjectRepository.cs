@@ -2,6 +2,7 @@
 using CampusTouch.Domain.Entities;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -63,19 +64,36 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
             return result > 0;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id,string userid)
         {
             var query = @"
                 UPDATE Subjects
-                SET IsActive = 0,
-                    UpdatedAt = GETDATE()
-                WHERE Id = @Id
+                SET IsDeleted = 1,
+                    deletedAt = GETDATE()
+                    deletedby=@userid
+                WHERE Id = @Id and isdeleted =0
             ";
 
           
-            var result = await _dbConnection.ExecuteAsync(query, new { Id = id });
+            var result = await _dbConnection.ExecuteAsync(query, new { Id = id, UserId = userid });
             return result > 0;  
         }
 
+        public async Task<bool> Exist(int semesterId, string code)
+        {
+            var query = @"SELECT COUNT(1)
+                  FROM Subjects
+                  WHERE SemesterId = @SemesterId
+                  AND Code = @Code
+                  AND IsDeleted = 0";
+
+            var count = await _dbConnection.ExecuteScalarAsync<int>(query, new
+            {
+                SemesterId = semesterId,
+                Code = code
+            });
+
+            return count > 0;
+        }
     }
 }

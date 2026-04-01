@@ -54,7 +54,13 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         public async Task<int> DeleteAsync(int id)
         {
-            var sql = "DELETE FROM Courses WHERE Id = @Id";
+            var sql = @"UPDATE Courses 
+                SET IsActive = 0,
+                    IsDeleted = 1,
+                    DeletedBy = @UserId,
+                    DeletedAt = @DeletedAt
+                WHERE Id = @Id";
+
             return await _dbconnection.ExecuteAsync(sql, new { Id = id });
         }
     }

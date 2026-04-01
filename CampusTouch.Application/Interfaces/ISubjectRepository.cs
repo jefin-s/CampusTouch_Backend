@@ -13,6 +13,8 @@ namespace CampusTouch.Application.Interfaces
         Task<IEnumerable<Subject>> GetAllAsync();
         Task<Subject?> GetByIdAsync(int id);
         Task<bool> UpdateAsync(Subject subject);
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id,string userid);
+        Task<bool> Exist(int semesterid, string code);
+                
     }
 }
