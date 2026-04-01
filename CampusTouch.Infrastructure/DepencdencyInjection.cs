@@ -32,6 +32,8 @@ namespace CampusTouch.Infrastructure
             services.AddScoped<ICurrentUserService,CurrentUserServices>();
             services.AddScoped<IDepartementRepository,DepartementRepository>();
             services.AddScoped<IProgramRepository,ProgramRepository>();
+            services.AddScoped<ISemsterRepository,SemseterRepository>();
+            services.AddScoped<ISubjectRepository,SubjectRepository>();
 
 
             services.AddScoped<IJWTService,JwtServices>();

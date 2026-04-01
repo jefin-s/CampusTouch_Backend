@@ -8,6 +8,7 @@ namespace CampusTouch.Application.Features.Students.Commands
         string AdmissionNumber,
         int CourseId,
         int DepartmentId,
+        
         DateTime? AdmissionDate,
 
         string FirstName,

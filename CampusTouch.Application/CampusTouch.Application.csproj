@@ -7,9 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Authentication\Commands\ResetPassword\" />
     <Folder Include="Features\Authentication\Queries\" />
     <Folder Include="Features\Program\DTOs\" />
+    <Folder Include="Features\Semester\DTOs\" />
     <Folder Include="Features\Students\Interfaces\" />
+    <Folder Include="Features\Subjects\DTOs\" />
   </ItemGroup>
 
   <ItemGroup>

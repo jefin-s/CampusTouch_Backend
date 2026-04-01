@@ -1,4 +1,5 @@
-﻿using CampusTouch.Application.Interfaces;
+﻿using CampusTouch.Application.Common.Exceptions;
+using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using MediatR;
 using System;
@@ -12,20 +13,27 @@ namespace CampusTouch.Application.Features.Departments.Commands
      public class UpdateDepartementHandler:IRequestHandler<UpdateDepartmentCommand,int>
     {
         private readonly IDepartementRepository _departementRepository;
-        public UpdateDepartementHandler(IDepartementRepository deptrep)
+        private readonly ICurrentUserService _currentUserService;
+        public UpdateDepartementHandler(IDepartementRepository deptrep,ICurrentUserService currentUserService)
         {
             _departementRepository = deptrep;
+            _currentUserService = currentUserService;   
         }
 
         public async Task <int>Handle(UpdateDepartmentCommand request,CancellationToken token)
         {
-            var dept = new Departement
-            {
-                Id = request.Id,
-                Name = request.Name,
-                Description = request.Description,
-            };
-            return await _departementRepository.UpdateAsync(dept);
+            var userId = _currentUserService.UserId;
+            var  ExistingDepartement=   await _departementRepository.GetByIdAsync(request.Id);
+            if (ExistingDepartement == null)
+                throw new NotFoundException("Departement Is Not Found");
+            if (!_currentUserService.IsAdmin)
+               throw new UnauthorizedException("Only Admin can Update Departement");
+            ExistingDepartement.Name = request.Name;
+            ExistingDepartement.Description = request.Description;
+            ExistingDepartement.UpdatedAt = DateTime.UtcNow;
+            ExistingDepartement.UpdatedBy = userId;
+
+            return await _departementRepository.UpdateAsync(ExistingDepartement);
 
         }
     }

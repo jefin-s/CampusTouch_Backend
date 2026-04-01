@@ -12,20 +12,25 @@ namespace CampusTouch.Application.Features.Departments.Commands
     public class CreateDepartementHandler:IRequestHandler<CreateDepartementCommand,int>
     {
         private readonly IDepartementRepository _repository;
-        public CreateDepartementHandler(IDepartementRepository repo)
+        private readonly ICurrentUserService _currentUserService;
+        public CreateDepartementHandler(IDepartementRepository repo,ICurrentUserService currentUserService)
         {
             _repository = repo;
+            _currentUserService = currentUserService;
         }
 
 
         public async Task<int> Handle(CreateDepartementCommand request, CancellationToken cancellationToken)
         {
+            var userId = _currentUserService.UserId;
             var department = new Departement
             {
                 Name = request.Name,
                 Description = request.Description,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy= userId,
+                
             };
 
             return await _repository.CreateAsync(department);

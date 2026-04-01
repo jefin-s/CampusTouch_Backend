@@ -6,7 +6,8 @@ using CampusTouch.Application.Features.Students.DTOs;
 using CampusTouch.Application.Features.Students.Queries.GetStudentsById;
 using CampusTouch.Application.Interfaces;
 using MediatR;
-    using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Identity.Client;
@@ -15,6 +16,7 @@ namespace CampusTouch.API.Controllers
     {
         [Route("api/[controller]")]
         [ApiController]
+    [Authorize]
         public class StudentController : ControllerBase
         {
 
@@ -70,44 +72,60 @@ namespace CampusTouch.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateStudent([FromForm] CreateStudentRequest request)
         {
-            string? imageUrl = null;
-
-            if (request.ProfileImage != null)
+            try
             {
-                using var stream = request.ProfileImage.OpenReadStream();
+                // 🔹 Handle Image Upload
+                string imageUrl = "";
 
-                imageUrl = await _cloudinaryService.UploadImageAsync(
-                    stream,
-                    request.ProfileImage.FileName
+                if (request.ProfileImage != null && request.ProfileImage.Length > 0)
+                {
+                    using var stream = request.ProfileImage.OpenReadStream();
+
+                    imageUrl = await _cloudinaryService.UploadImageAsync(
+                        stream,
+                        request.ProfileImage.FileName
+                    );
+                }
+
+                // 🔹 Create Command
+                var command = new CreateStudentCommand(
+                    request.AdmissionNumber,
+                    request.CourseId,
+                    request.DepartmentId,
+                    request.AdmissionDate,
+                    request.FirstName,
+                    request.LastName,
+                    request.DateOfBirth,
+                    request.Gender,
+                    request.PhoneNumber,
+                    request.Email,
+                    request.Address,
+                    request.GuardianName,
+                    request.GuardianPhone,
+                    request.BloodGroup,
+                    imageUrl // ✅ always safe (never null)
                 );
+
+                // 🔹 Send to Handler
+                var result = await _mediator.Send(command);
+
+                // 🔹 Response
+                return Ok(new ApiResponse<bool>
+                {
+                    Success = result,
+                    Message = result ? "Student created successfully" : "Failed to create student",
+                    Data = result
+                });
             }
-
-            var command = new CreateStudentCommand(
-                request.AdmissionNumber,
-                request.CourseId,
-                request.DepartmentId,
-                request.AdmissionDate,
-                request.FirstName,
-                request.LastName,
-                request.DateOfBirth,
-                request.Gender,
-                request.PhoneNumber,
-                request.Email,
-                request.Address,
-                request.GuardianName,
-                request.GuardianPhone,
-                request.BloodGroup,
-                imageUrl
-            );
-
-            var result = await _mediator.Send(command);
-
-            return Ok(new ApiResponse<bool>
+            catch (Exception ex)
             {
-                Success = result,
-                Message = "Student created successfully",
-                Data = result
-            });
+                // 🔥 Shows actual error (no more hidden 500)
+                return BadRequest(new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = ex.Message
+                });
+            }
         }
     }
     }

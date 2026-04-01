@@ -17,8 +17,8 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         public async Task<int> CreateAsync(Departement department)
         {
-            var sql = @"INSERT INTO Departments (Name, Description, IsActive, CreatedAt)
-                VALUES (@Name, @Description, @IsActive, @CreatedAt);
+            var sql = @"INSERT INTO Departments (Name, Description, IsActive, CreatedAt,CreatedBy)
+                VALUES (@Name, @Description, @IsActive, @CreatedAt,@CreatedBy);
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
             return await _connection.QuerySingleAsync<int>(sql, department);
@@ -39,7 +39,7 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
         }
 
 
-        public async  Task<int> UpdateAsync(Departement department)
+        public async  Task<int> UpdateAsync(Departement department) 
         {
             var sql= @"udpate departments set Name=@Name ,Description = @Description,
                     UpdatedAt = GETUTCDATE()

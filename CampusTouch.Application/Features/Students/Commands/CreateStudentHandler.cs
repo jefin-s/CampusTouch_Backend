@@ -37,6 +37,7 @@ namespace CampusTouch.Application.Features.Students.Commands
                 AdmissionNumber = request.AdmissionNumber,
                 CourseId = request.CourseId,
                 DepartmentId = request.DepartmentId,
+                
                 AdmissionDate = request.AdmissionDate,
 
                 FirstName = request.FirstName,

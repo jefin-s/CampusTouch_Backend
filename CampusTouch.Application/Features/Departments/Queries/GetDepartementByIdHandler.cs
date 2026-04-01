@@ -1,4 +1,5 @@
-﻿using CampusTouch.Application.Features.Departments.DTOs;
+﻿using CampusTouch.Application.Common.Exceptions;
+using CampusTouch.Application.Features.Departments.DTOs;
 using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using MediatR;
@@ -22,8 +23,9 @@ namespace CampusTouch.Application.Features.Departments.Queries
       CancellationToken cancellationToken)
         {
            var dept=await _repository.GetByIdAsync(request.Id);
-            if (dept == null)
-                return null;
+            if (dept == null || !dept.IsActive)
+                throw new NotFoundException("Departement is Not Found");
+            
 
             return new Deparetment_Response_DTO
             {

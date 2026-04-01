@@ -52,6 +52,70 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
         )
     };
+        options.Events = new JwtBearerEvents
+        {
+            // ✅ 401 - Not Authenticated
+            OnChallenge = async context =>
+            {
+                context.HandleResponse(); // MUST
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var response = new
+                {
+                    success = false,
+                    statusCode = 401,
+                    message = "Authentication required",
+                    errors = new[] { "Access token is missing or invalid" },
+                    timestamp = DateTime.UtcNow
+                };
+
+                await context.Response.WriteAsJsonAsync(response);
+            },
+
+            // ✅ 403 - Not Authorized
+            OnForbidden = async context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+
+                var response = new
+                {
+                    success = false,
+                    statusCode = 403,
+                    message = "Access denied",
+                    errors = new[] { "You do not have permission to access this resource" },
+                    timestamp = DateTime.UtcNow
+                };
+
+                await context.Response.WriteAsJsonAsync(response);
+            },
+
+            // 🔥 Handle Token Expired / Invalid
+            OnAuthenticationFailed = async context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var message = context.Exception switch
+                {
+                    SecurityTokenExpiredException => "Token has expired",
+                    _ => "Invalid authentication token"
+                };
+
+                var response = new
+                {
+                    success = false,
+                    statusCode = 401,
+                    message = message,
+                    errors = new[] { context.Exception.Message },
+                    timestamp = DateTime.UtcNow
+                };
+
+                await context.Response.WriteAsJsonAsync(response);
+            }
+        };
 });
 builder.Services.AddSwaggerGen(options =>
 {

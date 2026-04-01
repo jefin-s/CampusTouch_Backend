@@ -3,6 +3,7 @@ using CampusTouch.Application.Features.Departments.Commands;
 using CampusTouch.Application.Features.Departments.DTOs;
 using CampusTouch.Application.Features.Departments.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,7 @@ namespace CampusTouch.API.Controllers
             
         }
 
+        [Authorize(Roles ="Admin")]
         [HttpPost]
 
         public async Task<ActionResult> Create(CreateDepartementCommand command)

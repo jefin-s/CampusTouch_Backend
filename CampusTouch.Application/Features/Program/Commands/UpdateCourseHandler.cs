@@ -30,7 +30,7 @@ namespace CampusTouch.Application.Features.Program.Commands
             existingCourse.DepartmentId = request.DepartmentId;
             existingCourse.UpdatedAt = DateTime.UtcNow;
             return await _programRepository.UpdateAsync(existingCourse);
-        }
+        } 
         }
     }
 
