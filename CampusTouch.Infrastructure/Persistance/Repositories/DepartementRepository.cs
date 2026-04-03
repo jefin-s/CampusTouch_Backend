@@ -52,5 +52,13 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
             var sql = @"update students set isactive=0 ,UpdatedAt = GETUTCDATE() where Id=@id";
             return await _connection.ExecuteAsync(sql, id);
         }
+
+        public async   Task<bool> DepartemnetExist(string name)
+        {
+            var sql = @"select count(1) from departemnets  where  Name=@name  and isdeleted =0";
+            var count=  await _connection.ExecuteScalarAsync<int>(sql, new { name });
+            return count > 0;
+
+        }
     }
 }

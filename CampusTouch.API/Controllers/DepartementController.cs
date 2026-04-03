@@ -24,21 +24,21 @@ namespace CampusTouch.API.Controllers
         [Authorize(Roles ="Admin")]
         [HttpPost]
 
-        public async Task<ActionResult> Create(CreateDepartementCommand command)
+        public async Task<ActionResult<int>> Create(CreateDepartementCommand command)
         {
             var result = await _mediator.Send(command);
         
-            return Ok(new ApiResponse<string>
+            return CreatedAtAction( nameof(GetDeptByID),new { id=result},new ApiResponse<int>
             {
                 Success = true,
-                Data=null,
+                Data=result,
                 Message="Department Added successfully"
 
             });
         }
             
         [HttpGet]
-        public async Task <ActionResult<IEnumerable<Deparetment_Response_DTO>>> GetAllDepartements()
+        public async Task <ActionResult<ApiResponse<IEnumerable<Deparetment_Response_DTO>>>> GetAllDepartements()
         {
             var result = await _mediator.Send(new GetAllDepartementQuery());
             return Ok(new ApiResponse< IEnumerable< Deparetment_Response_DTO>>
@@ -51,7 +51,7 @@ namespace CampusTouch.API.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Deparetment_Response_DTO>> GetDeptByID(int id)
+        public async Task<ActionResult<ApiResponse<Deparetment_Response_DTO>>> GetDeptByID(int id)
         {
               var result=  await _mediator.Send(new GetDepartementByIdQuery(id));
              if(result==null)

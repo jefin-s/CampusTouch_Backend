@@ -1,4 +1,5 @@
-﻿using CampusTouch.Application.Interfaces;
+﻿using CampusTouch.Application.Common.Exceptions;
+using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using MediatR;
 using System;
@@ -9,35 +10,50 @@ using System.Threading.Tasks;
 
 namespace CampusTouch.Application.Features.Students.Commands
 {
-    public class CreateStudentHandler:IRequestHandler<CreateStudentCommand,bool>
+    public class CreateStudentHandler : IRequestHandler<CreateStudentCommand, bool>
     {
 
         private readonly IStudentRepository _studentRepository;
         private readonly ICurrentUserService _currentUserService;
-        public CreateStudentHandler(IStudentRepository studentRepository, ICurrentUserService currentUserService)
+        private readonly IProgramRepository _programRepository;
+        private readonly IDepartementRepository _departementRepository;
+        public CreateStudentHandler(IStudentRepository studentRepository, ICurrentUserService currentUserService, IProgramRepository programRepository, IDepartementRepository departementRepository)
         {
             _studentRepository = studentRepository;
             _currentUserService = currentUserService;
+            _programRepository = programRepository;
+            _departementRepository = departementRepository;
         }
         public async Task<bool> Handle(CreateStudentCommand request, CancellationToken cancellationToken)
         {
             var userId = _currentUserService.UserId;
 
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("User not authenticated");
+            // 1. Authorization
+            if (!_currentUserService.IsAdmin)
+                throw new UnauthorizedException("Only Admin can create student");
 
-            // 🧱 Create Student entity
+            // 2. Duplicate check
+            var exists = await _studentRepository.AdmissionNumberExist(request.AdmissionNumber);
+
+            if (exists)
+                throw new BuisnessRuleException("Student with this admission number already exists");
+
+            // 3. Validate Course & Department
+            var course = await _programRepository.GetByIdAsync(request.CourseId);
+            var department = await _departementRepository.GetByIdAsync(request.DepartmentId);
+
+            if (course == null || department == null||course.IsDeleted||department.isDeleted)
+                throw new NotFoundException("Invalid Course or Department");
+
+            // 4. Create entity
             var student = new Student
             {
-                
-
-                // 🔥 Important (link to AspNetUsers)
-                UserId = userId,
+                UserId = userId ,// IMPORTANT 🔥 (not current user)
 
                 AdmissionNumber = request.AdmissionNumber,
                 CourseId = request.CourseId,
                 DepartmentId = request.DepartmentId,
-                
+
                 AdmissionDate = request.AdmissionDate,
 
                 FirstName = request.FirstName,
@@ -57,13 +73,12 @@ namespace CampusTouch.Application.Features.Students.Commands
                 ProfileImageUrl = request.ProfileImageUrl,
 
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = userId
             };
 
-            // 💾 Save to DB using Dapper
             var result = await _studentRepository.CreateStudentAsync(student);
 
-            // ✅ Return success
             return result > 0;
         }
     }

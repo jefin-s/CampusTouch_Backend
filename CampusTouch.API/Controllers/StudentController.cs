@@ -69,14 +69,74 @@ namespace CampusTouch.API.Controllers
                 Data=result
             });
         }
-        [HttpPost]
-        public async Task<IActionResult> CreateStudent([FromForm] CreateStudentRequest request)
+            [HttpPost]
+            public async Task<IActionResult> CreateStudent([FromForm] CreateStudentRequest request)
+            {
+                try
+                {
+                    // 🔹 Handle Image Upload
+                    string imageUrl = "";
+
+                    if (request.ProfileImage != null && request.ProfileImage.Length > 0)
+                    {
+                        using var stream = request.ProfileImage.OpenReadStream();
+
+                        imageUrl = await _cloudinaryService.UploadImageAsync(
+                            stream,
+                            request.ProfileImage.FileName
+                        );
+                    }
+
+                    // 🔹 Create Command
+                    var command = new CreateStudentCommand(
+                    
+                        request.AdmissionNumber,
+                        request.CourseId,
+                        request.DepartmentId,
+                        request.AdmissionDate,
+                        request.FirstName,
+                        request.LastName,
+                        request.DateOfBirth,
+                        request.Gender,
+                        request.PhoneNumber,
+                        request.Email,
+                        request.Address,
+                        request.GuardianName,
+                        request.GuardianPhone,
+                        request.BloodGroup,
+                        imageUrl // ✅ always safe (never null)
+                    );
+
+                    // 🔹 Send to Handler
+                    var result = await _mediator.Send(command);
+
+                    // 🔹 Response
+                    return Ok(new ApiResponse<bool>
+                    {
+                        Success = result,
+                        Message = result ? "Student created successfully" : "Failed to create student",
+                        Data = result
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // 🔥 Shows actual error (no more hidden 500)
+                    return BadRequest(new ApiResponse<string>
+                    {
+                        Success = false,
+                        Message = ex.Message
+                    });
+                }
+            }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateStudent([FromForm] UpdateStudentRequest request)
         {
             try
             {
-                // 🔹 Handle Image Upload
-                string imageUrl = "";
+                string? imageUrl = null;
 
+                // 🔥 Upload only if new file provided
                 if (request.ProfileImage != null && request.ProfileImage.Length > 0)
                 {
                     using var stream = request.ProfileImage.OpenReadStream();
@@ -87,8 +147,9 @@ namespace CampusTouch.API.Controllers
                     );
                 }
 
-                // 🔹 Create Command
-                var command = new CreateStudentCommand(
+                // 🔹 Convert to Command
+                var command = new UpdateStudentCommand(
+                    request.Id,
                     request.AdmissionNumber,
                     request.CourseId,
                     request.DepartmentId,
@@ -103,29 +164,50 @@ namespace CampusTouch.API.Controllers
                     request.GuardianName,
                     request.GuardianPhone,
                     request.BloodGroup,
-                    imageUrl // ✅ always safe (never null)
+                    imageUrl // may be null
                 );
 
-                // 🔹 Send to Handler
                 var result = await _mediator.Send(command);
 
-                // 🔹 Response
                 return Ok(new ApiResponse<bool>
                 {
                     Success = result,
-                    Message = result ? "Student created successfully" : "Failed to create student",
+                    Message = result ? "Student updated successfully" : "Failed to update student",
                     Data = result
                 });
             }
             catch (Exception ex)
             {
-                // 🔥 Shows actual error (no more hidden 500)
                 return BadRequest(new ApiResponse<string>
                 {
                     Success = false,
                     Message = ex.Message
                 });
             }
+        }
+
+        [HttpDelete]
+
+        public async Task <ActionResult<string>> DeleteStudents(int id)
+        {
+            var  result= await _mediator.Send(new DeleteStudentCommand(id));
+            if (!result)
+            {
+                return NotFound(new ApiResponse<string>
+                {
+                    Success = false,
+                    Message="student Not found"
+                    
+
+                });
+
+            }
+            return Ok(new ApiResponse<string>
+            {
+                Success = true,
+                Message = "Student delted successfully",
+                Data = "Deleted"
+            });
         }
     }
     }

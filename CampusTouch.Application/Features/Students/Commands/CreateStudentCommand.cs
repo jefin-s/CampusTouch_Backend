@@ -5,6 +5,7 @@ using MediatR;
 namespace CampusTouch.Application.Features.Students.Commands
 {
     public  record CreateStudentCommand(
+     
         string AdmissionNumber,
         int CourseId,
         int DepartmentId,

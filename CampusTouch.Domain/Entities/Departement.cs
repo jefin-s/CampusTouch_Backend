@@ -21,5 +21,7 @@ namespace CampusTouch.Domain.Entities
         public string UpdatedBy { get; set; }
         public string DeletedBy { get; set; }
         public DateTime? DeletedAt { get; set; }
+     
+        public bool isDeleted { get; set; }
     }
 }

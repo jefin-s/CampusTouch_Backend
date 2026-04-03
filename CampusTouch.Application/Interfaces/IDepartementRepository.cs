@@ -10,5 +10,6 @@ namespace CampusTouch.Application.Interfaces
         Task<IEnumerable<Departement>> GetAllAsync();
         Task<int> UpdateAsync(Departement department);
         Task<int> DeleteAsync(int id);
+        Task<bool> DepartemnetExist(string name);
     }
 }
