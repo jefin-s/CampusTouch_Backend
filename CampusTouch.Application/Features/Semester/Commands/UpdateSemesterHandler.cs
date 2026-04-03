@@ -21,21 +21,22 @@ namespace CampusTouch.Application.Features.Semester.Commands
         }
         public async Task<bool> Handle(UpdateSemesterCommand request, CancellationToken cancellationToken)
         {
-            var userid = _currentUserService.UserId;
             if (!_currentUserService.IsAdmin)
             {
                throw new UnauthorizedException("Only Admin Can Update the Semester");
             }
+            var userid = _currentUserService.UserId;
+            var name = request.Name.Trim();
             var existing = await _repository.GetByIdAsync(request.Id);
             if (existing==null||existing.IsDeleted)
             {
                 throw new NotFoundException("Semester Is Not Exist");
             }
             var SemExist = await _repository.SemExist(request.CourseId,request.OrderNumber);
-            if (SemExist&&existing.Id!=request.Id)
+            if (SemExist&&existing.OrderNumber!=request.OrderNumber)
                 throw new BuisnessRuleException("Semster is already registered  ");
              
-            existing.Name = request.Name;
+            existing.Name = name;
             existing.CourseId = request.CourseId;   
             existing.OrderNumber = request.OrderNumber;
             existing.UpdatedAt = DateTime.UtcNow;

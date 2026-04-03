@@ -17,11 +17,11 @@ public class UpdateSubjectHandler : IRequestHandler<UpdateSubjectCommand, bool>
 
     public async Task<bool> Handle(UpdateSubjectCommand request, CancellationToken cancellationToken)
     {
-        var userId = _currentUserService.UserId;
 
         // 1. Authorization
         if (!_currentUserService.IsAdmin)
             throw new UnauthorizedException("Only Admin can update subject");
+        var userId = _currentUserService.UserId;
 
         // 2. Get existing
         var existing = await _repository.GetByIdAsync(request.Id);

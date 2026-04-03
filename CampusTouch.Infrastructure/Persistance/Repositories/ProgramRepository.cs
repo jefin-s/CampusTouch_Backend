@@ -63,5 +63,12 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
             return await _dbconnection.ExecuteAsync(sql, new { Id = id });
         }
+
+        public async Task<bool> ProgramIsExist(string course, int deptId)
+        {
+            var sql = "SELECT COUNT(1) FROM Courses WHERE Name = @couse AND DepartmentId = @deptId AND IsActive = 1";
+            var count = await _dbconnection.ExecuteScalarAsync<int>(sql, new { couse = course, deptId = deptId });
+            return count > 0;
+        }
     }
 }

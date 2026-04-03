@@ -23,12 +23,12 @@ namespace CampusTouch.Application.Features.Program.Commands
         public async Task<int> Handle(DeleteCourseCommand request, CancellationToken cancellationToken)
         {
 
+            if (!_currentUserService.IsAdmin)
+                throw new UnauthorizedException("Only Admin can Delete the Programs");
             var userid = _currentUserService.UserId;
             var ProgramIsExist = await _programRepository.GetByIdAsync(request.Id);
             if (ProgramIsExist == null)
                throw new NotFoundException("Program is not Exist");
-            if (!_currentUserService.IsAdmin)
-                throw new UnauthorizedException("Only Admin can Delete the Programs");
             ProgramIsExist.IsActive=false;
             ProgramIsExist.IsDeleted = true;
             ProgramIsExist.DeletedAt = DateTime.UtcNow;

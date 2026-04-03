@@ -17,11 +17,11 @@ public class DeleteSubjectHandler : IRequestHandler<DeleteSubjectCommand, bool>
 
     public async Task<bool> Handle(DeleteSubjectCommand request, CancellationToken cancellationToken)
     {
-        var userId = _currentUserService.UserId;
 
         // 1. Authorization
         if (!_currentUserService.IsAdmin)
             throw new UnauthorizedException("Only Admin can delete subject");
+        var userId = _currentUserService.UserId;
 
         // 2. Check existence
         var subject = await _repository.GetByIdAsync(request.Id);

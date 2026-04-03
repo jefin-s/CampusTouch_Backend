@@ -26,15 +26,15 @@ namespace CampusTouch.Application.Features.Program.Commands
             public async Task<int> Handle(UpdateCourseCommand request, CancellationToken cancellationToken)
         {
 
+            if (!_currentUserService.IsAdmin)
+            {
+                throw new UnauthorizedException("Only Admin can Updaet the course");
+            }
             var userId = _currentUserService.UserId;
             var existingCourse = await _programRepository.GetByIdAsync(request.Id);
             if (existingCourse == null||existingCourse.IsDeleted)
             {
                 throw new NotFoundException("Program is not Exist");
-            }
-            if (!_currentUserService.IsAdmin)
-            {
-                throw new UnauthorizedException("Only Admin can Updaet the course");
             }
             var existing = await _departementRepository.GetByIdAsync(request.DepartmentId);
 
@@ -42,8 +42,8 @@ namespace CampusTouch.Application.Features.Program.Commands
             {
                 throw new NotFoundException("Departement is not exist");
             }
-          
-            existingCourse.Name = request.Name;
+            var name = request.Name.Trim();
+            existingCourse.Name = name;
             existingCourse.Level = request.Level;
             existingCourse.Duration = request.Duration;
             existingCourse.DepartmentId = request.DepartmentId;

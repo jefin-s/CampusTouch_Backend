@@ -24,11 +24,11 @@ namespace CampusTouch.Application.Features.Semester.Commands
         public async Task<bool> Handle(DeleteSemesterCommand request, CancellationToken cancellationToken)
         {
 
-            var userid = _currentUserService.UserId;
             if (!_currentUserService.IsAdmin)
             {
                 throw new UnauthorizedException("Only Admin can Delete the  Semster");
             }
+            var userid = _currentUserService.UserId;
 
             var semster = await _repository.GetByIdAsync(request.Id);
             if (semster == null||semster.IsDeleted)

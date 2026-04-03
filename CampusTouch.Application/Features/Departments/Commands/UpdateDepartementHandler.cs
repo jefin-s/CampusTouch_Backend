@@ -22,12 +22,12 @@ namespace CampusTouch.Application.Features.Departments.Commands
 
         public async Task <int>Handle(UpdateDepartmentCommand request,CancellationToken token)
         {
-            var userId = _currentUserService.UserId;
-            var  ExistingDepartement=   await _departementRepository.GetByIdAsync(request.Id);
-            if (ExistingDepartement == null)
-                throw new NotFoundException("Departement Is Not Found");
             if (!_currentUserService.IsAdmin)
                throw new UnauthorizedException("Only Admin can Update Departement");
+            var userId = _currentUserService.UserId;
+            var  ExistingDepartement=   await _departementRepository.GetByIdAsync(request.Id);
+            if (ExistingDepartement == null&& ExistingDepartement.Name != request.Name)
+                throw new NotFoundException("Departement Is Not Found");
             ExistingDepartement.Name = request.Name;
             ExistingDepartement.Description = request.Description;
             ExistingDepartement.UpdatedAt = DateTime.UtcNow;

@@ -65,54 +65,30 @@ namespace CampusTouch.API.Controllers
 
         }
         [HttpDelete("{id}")]
+        [Authorize(Roles ="Admin")]
         public async Task<ActionResult> Delete(int id)
         {
             var result = await _mediator.Send(new DeleteDepartmentCommand(id));
-
-            if (result == 0)
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message="Department is not found"
-                });
-
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Department deleted successfully",
-                Data = "Deleted"
-            });
+             return NoContent();
+           
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> Update(int id, UpdateDepartmentCommand command)
-        {
-            if (id != command.Id)
+            [HttpPut("{id}")]
+        [Authorize(Roles ="Admin")]
+            public async Task<ActionResult<ApiResponse<string>>> Update(int id, UpdateDepartmentCommand command)
             {
-                return BadRequest(new ApiResponse<string>
+                if (id != command.Id)
                 {
-                    Success = false,
-                    Message = "ID mismatch"
-                });
+                    return BadRequest(new ApiResponse<string>
+                    {
+                        Success = false,
+                        Message = "ID mismatch"
+                    });
+                }
+
+                var result = await _mediator.Send(command);
+
+            return NoContent();
             }
-
-            var result = await _mediator.Send(command);
-
-            if (result == 0)
-            {
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Department not found"
-                });
-            }
-
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Department updated successfully",
-                Data = "Updated"
-            });
         }
-    }
 }

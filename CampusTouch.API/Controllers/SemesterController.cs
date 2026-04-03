@@ -17,32 +17,23 @@ namespace CampusTouch.API.Controllers
             _mediator = mediator;
         }
         [HttpPost]
-        public async Task<ActionResult> Create(CreateSemesterCommand command)
+        public async Task<ActionResult<ApiResponse<int>>> Create(CreateSemesterCommand command)
         {
-            try
-            {
-                var result = await _mediator.Send(command);
+            var result=await _mediator.Send(command);
 
-                return Ok(new ApiResponse<string>
+            return CreatedAtAction(nameof(GetById), new { id = result },
+                new ApiResponse<int>
                 {
                     Success = true,
-                    Data = null,
-                    Message = "Semester added successfully"
+                    Message = "Semester added successfully",
+                    Data = result
                 });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message
-                });
-            }
+
         }
 
-        // ✅ GET ALL
+       
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Semesters>>> GetAllSemesters()
+        public async Task<ActionResult<ApiResponse< IEnumerable<Semesters>>>> GetAllSemesters()
         {
             var result = await _mediator.Send(new GetAllSemesterQuery());
 
@@ -54,18 +45,13 @@ namespace CampusTouch.API.Controllers
             });
         }
 
-        // ✅ GET BY ID
+      
         [HttpGet("{id}")]
-        public async Task<ActionResult<Semesters>> GetById(int id)
+        public async Task<ActionResult< ApiResponse<Semesters>>> GetById(int id)
         {
             var result = await _mediator.Send(new GetSemesterByIdQuery(id));
 
-            if (result == null)
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Semester not found"
-                });
+          
 
             return Ok(new ApiResponse<Semesters>
             {
@@ -75,28 +61,17 @@ namespace CampusTouch.API.Controllers
             });
         }
 
-        // ✅ DELETE (Soft Delete)
+       
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var result = await _mediator.Send(new DeleteSemesterCommand(id));
+           await _mediator.Send(new DeleteSemesterCommand(id));
+            return NoContent();
 
-            if (!result)
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Semester not found"
-                });
-
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Semester deleted successfully",
-                Data = "Deleted"
-            });
+            
         }
 
-        // ✅ UPDATE
+      
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> Update(int id, UpdateSemesterCommand command)
         {
@@ -109,23 +84,9 @@ namespace CampusTouch.API.Controllers
                 });
             }
 
-            var result = await _mediator.Send(command);
+             await _mediator.Send(command);
 
-            if (!result)
-            {
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Semester not found"
-                });
-            }
-
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Semester updated successfully",
-                Data = "Updated"
-            });
+            return NoContent();
         }
     }
 }

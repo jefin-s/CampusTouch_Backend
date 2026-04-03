@@ -20,11 +20,12 @@ namespace CampusTouch.API.Controllers
 
         }
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<int>>> Create(CreateCourseCommand command)
+        public async Task<ActionResult<ApiResponse<int>>> CreateProgram(CreateCourseCommand command)
         {
             var result = await _mediator.Send(command);
 
-            return Ok(new ApiResponse<int>
+            return CreatedAtAction(nameof(GetById),new { id=result},
+            new ApiResponse<int>
             {
                 Success = true,
                 Message = "Course created successfully",
@@ -66,46 +67,29 @@ namespace CampusTouch.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> Update(int id, UpdateCourseCommand command)
+        public async Task<ActionResult> Update(int id, UpdateCourseCommand command)
         {
             if (id != command.Id)
-                return BadRequest();
-
-            var result = await _mediator.Send(command);
-
-            if (result == 0)
-                return NotFound(new ApiResponse<string>
+                return BadRequest( new ApiResponse<string>
                 {
-                    Success = false,
-                    Message = "Course not found"
+                    Success=false,
+                    Message= "Id mismatch"
                 });
 
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Course updated successfully",
-                Data = "Updated"
-            });
+             await _mediator.Send(command);
+
+
+
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var result = await _mediator.Send(new DeleteCourseCommand(id));
+             await _mediator.Send(new DeleteCourseCommand(id));
 
-            if (result == 0)
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Course not found"
-                });
-
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Course deleted successfully",
-                Data = "Deleted"
-            });
+            
+             return  NoContent();
         }
     }
 }

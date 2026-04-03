@@ -14,5 +14,6 @@ namespace CampusTouch.Application.Interfaces
         Task<AcademicProgram?> GetByIdAsync(int id);
         Task<int> UpdateAsync(AcademicProgram course);
         Task<int> DeleteAsync(int id);
+        Task<bool> ProgramIsExist(string course, int deptId);
     }
 }

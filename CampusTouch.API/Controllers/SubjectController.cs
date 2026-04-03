@@ -1,45 +1,38 @@
-﻿using CampusTouch.Application.Common;
-using CampusTouch.Domain.Entities;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿    using CampusTouch.Application.Common;
+    using CampusTouch.Domain.Entities;
+    using MediatR;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
 
-namespace CampusTouch.API.Controllers
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    public class SubjectController : ControllerBase
+    namespace CampusTouch.API.Controllers
     {
-        private readonly IMediator _mediator;
-        public SubjectController(IMediator mediator)
+        [Route("api/[controller]")]
+        [ApiController]
+        public class SubjectController : ControllerBase
         {
-            _mediator = mediator;
-        }
-        [HttpPost]
-        public async Task<ActionResult> Create(CreateSubjectCommand command)
-        {
-            try
+            private readonly IMediator _mediator;
+            public SubjectController(IMediator mediator)
             {
-                var result = await _mediator.Send(command);
+                _mediator = mediator;
+            }
+           
+        [HttpPost]
+        public async Task<ActionResult<ApiResponse<int>>> Create(CreateSubjectCommand command)
+        {
+            var result = await _mediator.Send(command);
 
-                return Ok(new ApiResponse<string>
+            return CreatedAtAction(nameof(GetById), new { id = result },
+                new ApiResponse<int>
                 {
                     Success = true,
-                    Message = "Subject added successfully"
+                    Message = "Subject created successfully",
+                    Data = result
                 });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message
-                });
-            }
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Subject>>> GetAll()
+      
+        public async Task<ActionResult<ApiResponse<IEnumerable<Subject>>>> GetAll()
         {
             var result = await _mediator.Send(new GetAllSubjectQuery());
 
@@ -52,16 +45,10 @@ namespace CampusTouch.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Subject>> GetById(int id)
+       
+        public async Task<ActionResult<ApiResponse<Subject>>> GetById(int id)
         {
             var result = await _mediator.Send(new GetSubjectByIdQuery(id));
-
-            if (result == null)
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Subject not found"
-                });
 
             return Ok(new ApiResponse<Subject>
             {
@@ -72,7 +59,8 @@ namespace CampusTouch.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, UpdateSubjectCommand command)
+      
+        public async Task<IActionResult> Update(int id, UpdateSubjectCommand command)
         {
             if (id != command.Id)
                 return BadRequest(new ApiResponse<string>
@@ -81,39 +69,17 @@ namespace CampusTouch.API.Controllers
                     Message = "ID mismatch"
                 });
 
-            var result = await _mediator.Send(command);
+            await _mediator.Send(command);
 
-            if (!result)
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Subject not found"
-                });
-
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Subject updated successfully"
-            });
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+       
+        public async Task<IActionResult> Delete(int id)
         {
-            var result = await _mediator.Send(new DeleteSubjectCommand(id));
-
-            if (!result)
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Subject not found"
-                });
-
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Subject deleted successfully"
-            });
+            await _mediator.Send(new DeleteSubjectCommand(id));
+            return NoContent();
         }
     }
-}
+    }

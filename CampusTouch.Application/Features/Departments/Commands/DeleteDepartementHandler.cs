@@ -27,16 +27,17 @@ namespace CampusTouch.Application.Features.Departments.Commands
         {
             var userid = _currentUserService.UserId;
 
+            if (!_currentUserService.IsAdmin)
+            {
+                throw new UnauthorizedException("only Admin can delete the departement");
+            }
             var Existing = await _departementRepository.GetByIdAsync(request.Id);
             if (Existing == null)
             {
                 throw new NotFoundException("Departement Is Not Found");
             }
-
-            if (!_currentUserService.IsAdmin)
-            {
-                throw new UnauthorizedException("only Admin can delete the departement");
-            }
+            Existing.isDeleted = true;
+            Existing.IsActive=false;
             Existing.DeletedAt = DateTime.UtcNow;
             Existing.DeletedBy=userid;
 

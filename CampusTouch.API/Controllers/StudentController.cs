@@ -29,38 +29,22 @@ namespace CampusTouch.API.Controllers
             }
             [HttpGet]
 
-            public async Task<ActionResult> GetAllStudents([FromQuery] int pageNumber=1, [FromQuery]  int pageSize = 10, [FromQuery] string?Search=null)
+            public async Task<ActionResult<ApiResponse<IEnumerable<StudentResponseDTO>>>> GetAllStudents([FromQuery] int pageNumber=1, [FromQuery]  int pageSize = 10, [FromQuery] string?Search=null)
             {
                 var result = await _mediator.Send(new GetAllStudentsQuery(pageNumber,pageSize,Search));
-                if (result==null||!result.Any())  
-                {
-                    return NotFound(new ApiResponse<IEnumerable<StudentResponseDTO>>
-                    {
-                        Success = false,
-                        Message = "No students found",
-                        Data = null
-                    });
-                }
-                var response = new ApiResponse<IEnumerable<StudentResponseDTO>>
-                {
-                    Success = true,
-                    Message = "Student fetched Successfully",
-                    Data = result
-                };
-               return Ok(response);
+                
+               return Ok( new ApiResponse <IEnumerable <StudentResponseDTO>>
+               {
+                     Success=true,
+                   Data = result,
+                   Message= "Students fetched successfully"
+               });
             }
         [HttpGet("{id}")]
-        public async Task <ActionResult> GetStudentById(int id )
+        public async Task <ActionResult<ApiResponse<StudentResponseDTO>>> GetStudentById(int id )
         {
             var result = await _mediator.Send(new GetStudentByIdQuery(id));
-            if (result == null)
-            {
-                return NotFound(new ApiResponse<string>
-                {
-                    Success= false,
-                    Message="Student Not Found"
-                });
-            }
+            
 
             return Ok(new ApiResponse<StudentResponseDTO>
             {
@@ -191,23 +175,7 @@ namespace CampusTouch.API.Controllers
         public async Task <ActionResult<string>> DeleteStudents(int id)
         {
             var  result= await _mediator.Send(new DeleteStudentCommand(id));
-            if (!result)
-            {
-                return NotFound(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message="student Not found"
-                    
-
-                });
-
-            }
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Student delted successfully",
-                Data = "Deleted"
-            });
+             return NoContent();
         }
     }
     }

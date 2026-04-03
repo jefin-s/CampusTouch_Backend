@@ -26,9 +26,11 @@ namespace CampusTouch.Application.Features.Semester.Commands
         public async Task<int> Handle(CreateSemesterCommand request, CancellationToken cancellationToken)
         {
 
-            var userid = _currentUserService.UserId;
             if (!_currentUserService.IsAdmin)
                 throw new UnauthorizedException("Only Admin Can CreateSemester");
+            
+            var userid = _currentUserService.UserId;
+            var name = request.Name.Trim();
             var exsiting = await _programRepository.GetByIdAsync(request.CourseId);
             if (exsiting == null||exsiting.IsDeleted)
             {
@@ -40,7 +42,7 @@ namespace CampusTouch.Application.Features.Semester.Commands
                 throw new BuisnessRuleException("Semster is already exist");
             var semester = new Semesters
             {
-                Name = request.Name,
+                Name = name,
                 OrderNumber = request.orderNumber,
                 CourseId = request.CourseId,
                 CreatedAt=DateTime.UtcNow,  

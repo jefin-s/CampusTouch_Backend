@@ -19,11 +19,13 @@ public class CreateSubjectHandler : IRequestHandler<CreateSubjectCommand, int>
 
     public async Task<int> Handle(CreateSubjectCommand request, CancellationToken cancellationToken)
     {
-        var userId = _currentUserService.UserId;
 
         // 1. Authorization
         if (!_currentUserService.IsAdmin)
             throw new UnauthorizedException("Only Admin can create subject");
+        var userId = _currentUserService.UserId;
+        var name= request.Name.Trim();
+        var code = request.Code.Trim().ToUpper();
 
         // 2. Validate Semester
         var semester = await _semsterRepository.GetByIdAsync(request.SemesterId);
@@ -32,7 +34,7 @@ public class CreateSubjectHandler : IRequestHandler<CreateSubjectCommand, int>
             throw new NotFoundException("Semester not found");
 
         // 3. Duplicate check
-        var exists = await _repository.Exist(request.SemesterId, request.Code);
+        var exists = await _repository.Exist(request.SemesterId,code);
 
         if (exists)
             throw new BuisnessRuleException("Subject already exists in this semester");
@@ -40,8 +42,8 @@ public class CreateSubjectHandler : IRequestHandler<CreateSubjectCommand, int>
         // 4. Create
         var subject = new Subject
         {
-            Name = request.Name,
-            Code = request.Code,
+            Name = name,
+            Code = code,
             Credits = request.Credits,
             SemesterId = request.SemesterId,
             CreatedAt = DateTime.UtcNow,
