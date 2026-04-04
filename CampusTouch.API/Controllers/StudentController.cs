@@ -54,6 +54,7 @@ namespace CampusTouch.API.Controllers
             });
         }
             [HttpPost]
+        [Authorize(Roles ="Admin")]
             public async Task<IActionResult> CreateStudent([FromForm] CreateStudentRequest request)
             {
                 try
@@ -113,8 +114,9 @@ namespace CampusTouch.API.Controllers
                 }
             }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateStudent([FromForm] UpdateStudentRequest request)
+        [HttpPut("{id}")]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> UpdateStudent(int id,[FromForm] UpdateStudentRequest request)
         {
             try
             {

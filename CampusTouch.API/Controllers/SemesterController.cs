@@ -2,6 +2,7 @@
 using CampusTouch.Application.Features.Semester.Commands;
 using CampusTouch.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace CampusTouch.API.Controllers
             _mediator = mediator;
         }
         [HttpPost]
+        [Authorize(Roles ="Admin")]
         public async Task<ActionResult<ApiResponse<int>>> Create(CreateSemesterCommand command)
         {
             var result=await _mediator.Send(command);
@@ -63,6 +65,7 @@ namespace CampusTouch.API.Controllers
 
        
         [HttpDelete("{id}")]
+        [Authorize(Roles ="Admin")]
         public async Task<ActionResult> Delete(int id)
         {
            await _mediator.Send(new DeleteSemesterCommand(id));
@@ -71,7 +74,7 @@ namespace CampusTouch.API.Controllers
             
         }
 
-      
+        [Authorize(Roles ="Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> Update(int id, UpdateSemesterCommand command)
         {
