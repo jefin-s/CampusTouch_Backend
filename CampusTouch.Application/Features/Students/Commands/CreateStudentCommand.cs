@@ -6,7 +6,7 @@ namespace CampusTouch.Application.Features.Students.Commands
 {
     public  record CreateStudentCommand(
      
-        string AdmissionNumber,
+        //string AdmissionNumber,
         int CourseId,
         int DepartmentId,
         

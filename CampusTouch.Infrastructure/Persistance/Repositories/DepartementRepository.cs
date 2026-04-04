@@ -17,8 +17,8 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         public async Task<int> CreateAsync(Departement department)
         {
-            var sql = @"INSERT INTO Departments (Name, Description, IsActive, CreatedAt,CreatedBy)
-                VALUES (@Name, @Description, @IsActive, @CreatedAt,@CreatedBy);
+            var sql = @"INSERT INTO Departments (Name, Description, IsActive, CreatedAt,CreatedBy,isDeleted)
+                VALUES (@Name, @Description,1, @CreatedAt,@CreatedBy,0);
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
             return await _connection.QuerySingleAsync<int>(sql, department);
@@ -41,7 +41,7 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         public async  Task<int> UpdateAsync(Departement department) 
         {
-            var sql= @"udpate departments set Name=@Name ,Description = @Description,
+            var sql= @"update departments set Name=@Name ,Description = @Description,
                     UpdatedAt = GETUTCDATE()
                 WHERE Id = @Id";
                 return await _connection.ExecuteAsync(sql, department);
@@ -49,13 +49,13 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
         }
         public async Task<int> DeleteAsync(int id)
         {
-            var sql = @"update students set isactive=0 ,UpdatedAt = GETUTCDATE() where Id=@id";
-            return await _connection.ExecuteAsync(sql, id);
+            var sql = @"update departments set isactive=0 ,isdeleted=1,UpdatedAt = GETUTCDATE() where Id=@Id";
+            return await _connection.ExecuteAsync(sql, new { Id=id});
         }
 
         public async   Task<bool> DepartemnetExist(string name)
         {
-            var sql = @"select count(1) from departemnets  where  Name=@name  and isdeleted =0";
+            var sql = @"select count(1) from departments  where  Name=@name  and isdeleted =0";
             var count=  await _connection.ExecuteScalarAsync<int>(sql, new { name });
             return count > 0;
 

@@ -17,6 +17,7 @@ namespace CampusTouch.Application.Features.Students.Commands
         private readonly ICurrentUserService _currentUserService;
         private readonly IProgramRepository _programRepository;
         private readonly IDepartementRepository _departementRepository;
+       
         public CreateStudentHandler(IStudentRepository studentRepository, ICurrentUserService currentUserService, IProgramRepository programRepository, IDepartementRepository departementRepository)
         {
             _studentRepository = studentRepository;
@@ -32,25 +33,33 @@ namespace CampusTouch.Application.Features.Students.Commands
             if (!_currentUserService.IsAdmin)
                 throw new UnauthorizedException("Only Admin can create student");
 
-            // 2. Duplicate check
-            var exists = await _studentRepository.AdmissionNumberExist(request.AdmissionNumber);
+          
 
-            if (exists)
-                throw new BuisnessRuleException("Student with this admission number already exists");
 
-            // 3. Validate Course & Department
             var course = await _programRepository.GetByIdAsync(request.CourseId);
             var department = await _departementRepository.GetByIdAsync(request.DepartmentId);
 
             if (course == null || department == null||course.IsDeleted||department.isDeleted)
                 throw new NotFoundException("Invalid Course or Department");
 
+            var sequence= await _studentRepository.GetNextAdmissionSequence(request.DepartmentId);
+            var AdmissionNumber = $"{department.code}{DateTime.UtcNow.Year}{sequence:D3}";
+            // 2. Duplicate check
+            var exists = await _studentRepository.AdmissionNumberExist(AdmissionNumber);
+            if (exists)
+                throw new BuisnessRuleException("Student with this admission number already exists");
+
+            if(string.IsNullOrWhiteSpace(request.Email))
+            {
+                throw new BuisnessRuleException("Email is required");
+            }
             // 4. Create entity
+
             var student = new Student
             {
-                UserId = userId ,// IMPORTANT 🔥 (not current user)
+                UserId = null,// IMPORTANT 🔥 (not current user)
 
-                AdmissionNumber = request.AdmissionNumber,
+                AdmissionNumber = AdmissionNumber,
                 CourseId = request.CourseId,
                 DepartmentId = request.DepartmentId,
 

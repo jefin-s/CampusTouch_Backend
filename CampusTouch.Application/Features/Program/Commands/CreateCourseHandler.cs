@@ -47,7 +47,7 @@
                     DepartmentId= request.DepartmentId,
                     CreatedAt=DateTime.UtcNow,
                     CreatedBy=userId
-
+                    
                 };
                 return await _programRepository.CreateAsync(course);
             }

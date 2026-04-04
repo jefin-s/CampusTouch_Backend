@@ -69,7 +69,7 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
             var query = @"
                 UPDATE Subjects
                 SET IsDeleted = 1,
-                    deletedAt = GETDATE()
+                    deletedAt = GETDATE(),
                     deletedby=@userid
                 WHERE Id = @Id and isdeleted =0
             ";

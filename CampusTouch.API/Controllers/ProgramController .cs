@@ -72,14 +72,9 @@ namespace CampusTouch.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, UpdateCourseCommand command)
         {
-            if (id != command.Id)
-                return BadRequest( new ApiResponse<string>
-                {
-                    Success=false,
-                    Message= "Id mismatch"
-                });
+            var updatedcommand = command with { Id = id };
 
-             await _mediator.Send(command);
+             await _mediator.Send(updatedcommand);
 
 
 

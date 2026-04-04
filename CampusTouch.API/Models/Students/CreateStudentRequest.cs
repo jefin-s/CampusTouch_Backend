@@ -2,7 +2,7 @@
 {
     public class CreateStudentRequest
     {
-        public string AdmissionNumber { get; set; }
+        
         public int CourseId { get; set; }
         public  int DepartmentId { get; set; }
        

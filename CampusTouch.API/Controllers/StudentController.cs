@@ -75,7 +75,7 @@ namespace CampusTouch.API.Controllers
                     // 🔹 Create Command
                     var command = new CreateStudentCommand(
                     
-                        request.AdmissionNumber,
+                      
                         request.CourseId,
                         request.DepartmentId,
                         request.AdmissionDate,

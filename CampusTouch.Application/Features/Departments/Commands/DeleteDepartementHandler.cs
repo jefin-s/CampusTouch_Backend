@@ -39,7 +39,7 @@ namespace CampusTouch.Application.Features.Departments.Commands
             Existing.isDeleted = true;
             Existing.IsActive=false;
             Existing.DeletedAt = DateTime.UtcNow;
-            Existing.DeletedBy=userid;
+            Existing.DeletedBy = userid;
 
             return await _departementRepository.DeleteAsync(request.Id);
         }

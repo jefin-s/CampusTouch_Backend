@@ -57,7 +57,7 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
             var query = @"UPDATE Semester 
                   SET IsDeleted = 1,
                       DeletedAt = GETUTCDATE(),
-                      DeletedBy = @UserId
+                      DeletedBy = @userid
                   WHERE Id = @Id";
             var rowsAffected = await _dbconnection.ExecuteAsync(query, new { Id = id,userid=userid });
             return rowsAffected > 0;

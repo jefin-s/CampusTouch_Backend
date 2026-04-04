@@ -71,7 +71,7 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         public async Task<bool> AdmissionNumberExist(string admissionNumber)
         {
-            var query = "select count(1) from students where AdmissionNumber=@admissionNumber where is isdeleted=0";
+            var query = "select count(1) from students where AdmissionNumber=@AdmissionNumber and  isdeleted=0";
 
             var count = await _dbConnection.ExecuteScalarAsync<int>(query, new
             {
@@ -114,9 +114,27 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
                         isactive=0,
                        DeletedAt = GETUTCDATE(),
                        DeletedBy = @UserId
-                   WHERE Id = @Id";
+                   WHERE Id = @id";
             var rowsAffected = await _dbConnection.ExecuteAsync(query, new { Id = id, UserId = userid });
             return rowsAffected > 0;
+        }
+
+        public async Task<int> GetNextAdmissionSequence(int deptId)
+        {
+            var  year=DateTime.UtcNow.Year;
+            var sql = @"
+        SELECT COUNT(1)
+        FROM Students
+        WHERE DepartmentId = @DepartmentId
+        AND YEAR(CreatedAt) = @Year";
+
+            var count = await _dbConnection.ExecuteScalarAsync<int>(sql, new
+            {
+                DepartmentId = deptId,
+                Year = year
+            });
+
+            return count + 1;
         }
     }
 }

@@ -26,6 +26,7 @@ namespace CampusTouch.API.Controllers
 
         public async Task<ActionResult<int>> Create(CreateDepartementCommand command)
         {
+
             var result = await _mediator.Send(command);
         
             return CreatedAtAction( nameof(GetDeptByID),new { id=result},new ApiResponse<int>
@@ -42,7 +43,7 @@ namespace CampusTouch.API.Controllers
         {
             var result = await _mediator.Send(new GetAllDepartementQuery());
             return Ok(new ApiResponse< IEnumerable< Deparetment_Response_DTO>>
-            {
+            {   
                 Success = true,
                 Message = "Departements fetched successfully",
                 Data = result
@@ -77,16 +78,11 @@ namespace CampusTouch.API.Controllers
         [Authorize(Roles ="Admin")]
             public async Task<ActionResult<ApiResponse<string>>> Update(int id, UpdateDepartmentCommand command)
             {
-                if (id != command.Id)
-                {
-                    return BadRequest(new ApiResponse<string>
-                    {
-                        Success = false,
-                        Message = "ID mismatch"
-                    });
-                }
+            //Create a new copy of  recored with  updatedvalue
+             //because recored cannot create a new  object 
+            var updatedCommand = command with { Id = id };
 
-                var result = await _mediator.Send(command);
+                var result = await _mediator.Send(updatedCommand);
 
             return NoContent();
             }

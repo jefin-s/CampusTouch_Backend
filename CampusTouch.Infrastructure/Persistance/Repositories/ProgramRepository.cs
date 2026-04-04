@@ -57,8 +57,8 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
             var sql = @"UPDATE Courses 
                 SET IsActive = 0,
                     IsDeleted = 1,
-                    DeletedBy = @UserId,
-                    DeletedAt = @DeletedAt
+                   
+                    DeletedAt = getutcdate()
                 WHERE Id = @Id";
 
             return await _dbconnection.ExecuteAsync(sql, new { Id = id });

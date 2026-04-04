@@ -25,10 +25,11 @@ namespace CampusTouch.Application.Features.Departments.Commands
         {
             if(!_currentUserService.IsAdmin)
                 throw new UnauthorizedException("Only admins can create departments.");
-
+            
+            
             var DepartmentExists = await _repository.DepartemnetExist(request.Name);
             if(DepartmentExists)
-                throw new BadRequestException($"A department with the name '{request.Name}' already exists.");
+                throw new BuisnessRuleException($"A department with the name '{request.Name}' already exists.");
             var userId = _currentUserService.UserId;
             var department = new Departement
             {

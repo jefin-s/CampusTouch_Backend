@@ -38,9 +38,9 @@ namespace CampusTouch.API.Middlewares
             {
                 await HandleException(httpContext, 409, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await HandleException(httpContext, 500, "Internal server error");
+                await HandleException(httpContext, 500, ex.Message);
             }
         }
 

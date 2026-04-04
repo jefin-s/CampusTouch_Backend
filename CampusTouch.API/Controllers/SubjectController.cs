@@ -53,7 +53,7 @@ using Microsoft.AspNetCore.Http;
             var result = await _mediator.Send(new GetSubjectByIdQuery(id));
 
             return Ok(new ApiResponse<Subject>
-            {
+            {   
                 Success = true,
                 Message = "Subject fetched successfully",
                 Data = result
@@ -62,14 +62,9 @@ using Microsoft.AspNetCore.Http;
 
         [HttpPut("{id}")]
         [Authorize(Roles ="Admin")]
-        public async Task<IActionResult> Update(int id, UpdateSubjectCommand command)
+        public async Task<ActionResult<string>> Update(int id, UpdateSubjectCommand command)
         {
-            if (id != command.Id)
-                return BadRequest(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "ID mismatch"
-                });
+            var updatedcommand = command with { Id = id };
 
             await _mediator.Send(command);
 
@@ -78,7 +73,7 @@ using Microsoft.AspNetCore.Http;
 
         [HttpDelete("{id}")]
         [Authorize(Roles ="Admin")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
             await _mediator.Send(new DeleteSubjectCommand(id));
             return NoContent();
