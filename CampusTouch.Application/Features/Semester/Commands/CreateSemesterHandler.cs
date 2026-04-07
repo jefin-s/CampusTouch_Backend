@@ -34,6 +34,7 @@ namespace CampusTouch.Application.Features.Semester.Commands
             var exsiting = await _programRepository.GetByIdAsync(request.CourseId);
             if (exsiting == null||exsiting.IsDeleted)
             {
+
                 throw new NotFoundException("Cousre is Not  Found ");
             }
 

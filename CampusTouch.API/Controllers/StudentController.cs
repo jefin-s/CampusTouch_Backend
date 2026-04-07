@@ -1,5 +1,6 @@
 ﻿using CampusTouch.API.Models.Students;
 using CampusTouch.Application.Common;
+using CampusTouch.Application.Features.ApproveStudent.Command;
 using CampusTouch.Application.Features.Students.Commands;
 using CampusTouch.Application.Features.Students.DTOs;
     using CampusTouch.Application.Features.Students.Queries.GetAllStudents;
@@ -176,8 +177,17 @@ namespace CampusTouch.API.Controllers
 
         public async Task <ActionResult<string>> DeleteStudents(int id)
         {
-            var  result= await _mediator.Send(new DeleteStudentCommand(id));
+            var  result= await _mediator.Send(new DeleteStudentCommand(id));    
              return NoContent();
+        }
+
+        [HttpPost("approve-student")]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> ApproveStudent(ApproveStudentCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            return result ? Ok("Approved") : BadRequest("Failed");
         }
     }
     }

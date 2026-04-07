@@ -7,7 +7,7 @@ namespace CampusTouch.Infrastructure.Persistance.Seed
     {
         public static async Task SeedAsync(RoleManager<IdentityRole> roleManager)
         {
-            string[] roles = { "Admin", "Student", "Faculty" };
+            string[] roles = { "Admin", "Student", "Faculty" ,"Applicant"};
 
             foreach (var role in roles)
             {

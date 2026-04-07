@@ -16,5 +16,7 @@
         Task<bool> UpdateStudent(Student student);
         Task <bool> DeleteStudent(int id,string userid);    
         Task <int> GetNextAdmissionSequence(int deptId);
+
+        Task<Student> GetStudentByUserId(string userId);
     }
     }

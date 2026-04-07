@@ -10,7 +10,8 @@ namespace CampusTouch.Application.Interfaces
             string email,
             string password,
             string phoneNumber,
-            string username
+            string username,
+            string role
         );
 
         Task<LoginResponseDTO> LoginAsync(
@@ -19,5 +20,8 @@ namespace CampusTouch.Application.Interfaces
       );
 
         Task<LoginResponseDTO> RefreshTokenAsync(string refreshToken);
+
+        Task PromoteToStudentAsync(string userId);
+         //Task PromoteToFacultyAsync(string userId, string departmentId);
     }
 }

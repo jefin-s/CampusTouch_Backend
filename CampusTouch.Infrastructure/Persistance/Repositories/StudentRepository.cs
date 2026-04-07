@@ -121,20 +121,28 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         public async Task<int> GetNextAdmissionSequence(int deptId)
         {
-            var  year=DateTime.UtcNow.Year;
-            var sql = @"
-        SELECT COUNT(1)
-        FROM Students
-        WHERE DepartmentId = @DepartmentId
-        AND YEAR(CreatedAt) = @Year";
+            var year = DateTime.UtcNow.Year;
 
-            var count = await _dbConnection.ExecuteScalarAsync<int>(sql, new
+            var sql = @"
+SELECT ISNULL(MAX(CAST(RIGHT(AdmissionNumber, 3) AS INT)), 0)
+FROM Students
+WHERE DepartmentId = @DepartmentId
+AND YEAR(CreatedAt) = @Year";
+
+            var maxSequence = await _dbConnection.ExecuteScalarAsync<int>(sql, new
             {
                 DepartmentId = deptId,
                 Year = year
             });
 
-            return count + 1;
+            return maxSequence + 1;
+        }
+
+        public async Task<Student> GetStudentByUserId(string userId)
+        {
+            var query = "Select *from students  where UserId=@UserId and isDeleted=0";
+            var result = await _dbConnection.QueryFirstOrDefaultAsync<Student>(query, new { UserId = userId });
+            return result;
         }
     }
 }
