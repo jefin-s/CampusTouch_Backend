@@ -15,6 +15,7 @@ namespace CampusTouch.Application.Interfaces
         Task<bool> UpdateAsync(Subject subject);
         Task<bool> DeleteAsync(int id,string userid);
         Task<bool> Exist(int semesterid, string code);
-                
+        Task<List<Subject>> GetByIds(List<int> ids);
+
     }
 }

@@ -95,5 +95,16 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
             return count > 0;
         }
+        public async Task<List<Subject>> GetByIds(List<int> ids)
+        {
+            var sql = @"SELECT * FROM Subjects WHERE Id IN @Ids";
+
+            var result = await _dbConnection.QueryAsync<Subject>(sql, new
+            {
+                Ids = ids
+            });
+
+            return result.ToList();
+        }
     }
 }

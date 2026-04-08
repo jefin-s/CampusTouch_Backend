@@ -18,5 +18,9 @@ namespace CampusTouch.Application.Interfaces
 
         Task<int> DeactivateStaff(int id);
         Task<Staff?> GetByUserId(string userId);
+
+        Task<bool> IsEmailExist(string email);
+
+        Task<bool> IsPhoneNumberExist(string phoneNumber,int staffid);
     }
 }

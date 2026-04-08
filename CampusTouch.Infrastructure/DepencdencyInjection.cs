@@ -2,6 +2,7 @@
 using CampusTouch.Infrastructure.Identity;
 using CampusTouch.Infrastructure.Persistance.Identity;
 using CampusTouch.Infrastructure.Persistance.Repositories;
+using CampusTouch.Infrastructure.Persistence.Repositories;
 using CampusTouch.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
@@ -35,6 +36,8 @@ namespace CampusTouch.Infrastructure
             services.AddScoped<ISemsterRepository,SemseterRepository>();
             services.AddScoped<ISubjectRepository,SubjectRepository>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IStaffRepository, StaffRepository>();
+            services.AddScoped<IStaffSubjectRepository,StaffSubjectRepository>();
 
 
             services.AddScoped<IJWTService,JwtServices>();

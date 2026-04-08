@@ -1,22 +1,19 @@
-﻿using MediatR;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CampusTouch.Application.Features.Staffs.Commands
+namespace CampusTouch.Application.Features.Staffs.DTOs
 {
-    public  class UpdateStaffCommand:IRequest<bool>
+    public class StaffDto
     {
         public int Id { get; set; }
-
         public string FirstName { get; set; }
         public string? LastName { get; set; }
-
+        public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Designation { get; set; }
-
         public int DepartmentId { get; set; }
     }
 }

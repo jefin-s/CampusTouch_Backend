@@ -22,8 +22,8 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         public async Task<int> CreateNewStaff(Staff newStaff)
         {
-            var sql = @"INSERT INTO Staff (UserId, FirstName, LastName, Email, PhoneNumber, DepartmentId, Designation, EmployeeCode, JoiningDate, IsActive, CreatedAt, CreatedBy)
-                         VALUES (@UserId, @FirstName, @LastName, @Email, @PhoneNumber, @DepartmentId, @Designation, @EmployeeCode, @JoiningDate, @IsActive, @CreatedAt, @CreatedBy);
+            var sql = @"INSERT INTO Staff (UserId, FirstName, LastName, Email, PhoneNumber, DepartmentId, Designation, JoiningDate, IsActive, CreatedAt, CreatedBy)
+                         VALUES (@UserId, @FirstName, @LastName, @Email, @PhoneNumber, @DepartmentId, @Designation, @JoiningDate, @IsActive, @CreatedAt, @CreatedBy);
                          SELECT CAST(SCOPE_IDENTITY() as int)";
             return await _dbconnection.QuerySingleAsync<int>(sql, newStaff);
         }
@@ -37,7 +37,7 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
         public async Task<Staff?> GetStaffById(int id)
         {
-            var query = "SELECT * FROM Staff WHERE Id = @Id";
+            var query = "SELECT * FROM Staff WHERE Id = @Id and isactive=1";
             return await _dbconnection.QueryFirstOrDefaultAsync<Staff>(query, new { Id = id });
         }
 
@@ -45,7 +45,7 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
         {
             var sql = @"UPDATE Staff 
                         SET FirstName = @FirstName, LastName = @LastName, Email = @Email, PhoneNumber = @PhoneNumber, 
-                            DepartmentId = @DepartmentId, Designation = @Designation, EmployeeCode = @EmployeeCode, 
+                            DepartmentId = @DepartmentId, Designation = @Designation, 
                             JoiningDate = @JoiningDate, UpdatedAt = @UpdatedAt
                         WHERE Id = @Id";
             return await _dbconnection.ExecuteAsync(sql, staff);
@@ -64,6 +64,21 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
             var query = "SELECT * FROM Staff WHERE UserId = @UserId AND IsActive = 1";
             return await _dbconnection.QueryFirstOrDefaultAsync<Staff>(query, new { UserId = userId });
 
+        }
+
+        public async Task<bool> IsEmailExist(string email)
+        {
+            var query = "SELECT COUNT(1) FROM Staff WHERE Email = @Email AND IsActive = 1";
+            var count = await _dbconnection.ExecuteScalarAsync<int>(query, new { Email = email });
+            return count > 0;
+        }
+
+        public async Task<bool> IsPhoneNumberExist(string phoneNumber, int staffid)
+        {
+            var query = "SELECT COUNT(1) FROM Staff WHERE PhoneNumber = @PhoneNumber AND Id != @StaffId AND IsActive = 1";
+
+            var count= await _dbconnection.ExecuteScalarAsync<int>(query, new { PhoneNumber = phoneNumber, StaffId = staffid });
+            return count > 0;
         }
     }
 }
