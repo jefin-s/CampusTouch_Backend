@@ -40,7 +40,13 @@ namespace CampusTouch.API.Middlewares
             }
             catch (Exception ex)
             {
-                await HandleException(httpContext, 500, ex.Message);
+                var realMessage = ex.InnerException?.Message ?? ex.Message;
+
+                await HandleException(
+                    httpContext,
+                    500,
+                    realMessage // 🔥 SHOW REAL ERROR
+                );
             }
         }
 

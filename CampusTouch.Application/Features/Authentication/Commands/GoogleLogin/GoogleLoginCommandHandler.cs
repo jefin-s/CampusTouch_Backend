@@ -1,4 +1,5 @@
-﻿using CampusTouch.Application.Features.Authentication.DTOs;
+﻿using CampusTouch.Application.Common.Exceptions;
+using CampusTouch.Application.Features.Authentication.DTOs;
 using CampusTouch.Application.Interfaces;
 using MediatR;
 using System;
@@ -17,13 +18,19 @@ namespace CampusTouch.Application.Features.Authentication.Commands.GoogleLogin
         {
             _googleAuthService = googleAuthService;
             _jwtService = jWTService;
-
+                
         }
         public async Task<GoogleLoginResponseDTO> Handle(
-      GoogleLoginCommand request,
-      CancellationToken cancellationToken)
+     GoogleLoginCommand request,
+     CancellationToken cancellationToken)
         {
             var user = await _googleAuthService.AuthenticateAsync();
+
+            if (user == null)
+                throw new NotFoundException("Google authentication failed");
+
+            if (user.Roles == null || !user.Roles.Any())
+                throw new NotFoundException("User has no roles assigned");
 
             var token = _jwtService.GenerateToken(user.Id, user.Email, user.Roles);
 

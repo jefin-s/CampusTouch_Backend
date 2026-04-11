@@ -1,63 +1,80 @@
-﻿using CampusTouch.API.Middlewares;
-using CampusTouch.Application.Common.Behaviors;
-using CampusTouch.Application.Features.Authentication.Vaidators;
-using CampusTouch.Infrastructure;
-using CampusTouch.Infrastructure.Persistance.Identity;
-using CampusTouch.Infrastructure.Persistance.Seed;
-using FluentValidation;
-using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+﻿    using CampusTouch.API.Middlewares;
+    using CampusTouch.Application.Common.Behaviors;
+    using CampusTouch.Application.Features.Authentication.Vaidators;
+    using CampusTouch.Infrastructure;
+    using CampusTouch.Infrastructure.Persistance.Identity;
+    using CampusTouch.Infrastructure.Persistance.Seed;
+    using FluentValidation;
+    using MediatR;
+    using Microsoft.AspNetCore.Authentication.Cookies;
+    using Microsoft.AspNetCore.Authentication.Google;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.IdentityModel.Tokens;
+    using System.Text;
 
-//using CampusTouch.Application.Features.Authentication.Commands.Register;
-var builder = WebApplication.CreateBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+    // ✅ Add services
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+    builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddInfrastructure(builder.Configuration);
+    // ✅ MediatR
+    builder.Services.AddMediatR(cfg =>
+        cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
+
+    // ✅ FluentValidation
+    builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserCommandValidator).Assembly);
+
+    // ✅ Pipeline Behavior
+    builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 
-// ✅ Correct MediatR (v12)
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
-
-// ✅ FluentValidation
-builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserCommandValidator).Assembly);
-
-// ✅ Pipeline (VERY IMPORTANT)
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    // 🔥🔥🔥 CORRECT AUTH CONFIG (VERY IMPORTANT)
+    builder.Services.AddAuthentication(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        // ✅ Use JWT as default for APIs
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    // ✅ Cookie (used internally by Google OAuth)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-        )
-    };
+    // ✅ Google OAuth
+    .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        options.CallbackPath = "/signin-google";
+
+        // Optional but recommended
+        options.SaveTokens = true;
+    })
+    // ✅ JWT
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+            )
+        };
+
         options.Events = new JwtBearerEvents
         {
-            // ✅ 401 - Not Authenticated
+            // 🔐 401
             OnChallenge = async context =>
             {
-                context.HandleResponse(); // MUST
+                context.HandleResponse();
 
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/json";
@@ -74,7 +91,7 @@ builder.Services.AddAuthentication(options =>
                 await context.Response.WriteAsJsonAsync(response);
             },
 
-            // ✅ 403 - Not Authorized
+            // 🔐 403
             OnForbidden = async context =>
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
@@ -85,14 +102,14 @@ builder.Services.AddAuthentication(options =>
                     success = false,
                     statusCode = 403,
                     message = "Access denied",
-                    errors = new[] { "You do not have permission to access this resource" },
+                    errors = new[] { "You do not have permission" },
                     timestamp = DateTime.UtcNow
                 };
 
                 await context.Response.WriteAsJsonAsync(response);
             },
 
-            // 🔥 Handle Token Expired / Invalid
+            // 🔥 Token issues
             OnAuthenticationFailed = async context =>
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -100,8 +117,8 @@ builder.Services.AddAuthentication(options =>
 
                 var message = context.Exception switch
                 {
-                    SecurityTokenExpiredException => "Token has expired",
-                    _ => "Invalid authentication token"
+                    SecurityTokenExpiredException => "Token expired",
+                    _ => "Invalid token"
                 };
 
                 var response = new
@@ -116,58 +133,66 @@ builder.Services.AddAuthentication(options =>
                 await context.Response.WriteAsJsonAsync(response);
             }
         };
-});
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Enter JWT Token like: Bearer {your token}"
     });
 
-    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+
+    // ✅ Swagger with JWT
+    builder.Services.AddSwaggerGen(options =>
     {
+        options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            Name = "Authorization",
+            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Description = "Enter JWT Token like: Bearer {your token}"
+        });
+
+        options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                    {
+                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] {}
+            }
+        });
     });
-});
 
-var app = builder.Build();
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
+    var app = builder.Build();
 
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    // ✅ Seed Roles + Admin
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
 
-    await RoleSeeder.SeedAsync(roleManager);
-    await AdminSeeder.SeedAdminAsync(userManager);
-}
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-app.UseMiddleware<GlobalExceptionMiddleWare>();
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
+        await RoleSeeder.SeedAsync(roleManager);
+        await AdminSeeder.SeedAdminAsync(userManager);
+    }
 
-app.MapControllers();
+    // ✅ Middleware
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
-app.Run();
+    app.UseMiddleware<GlobalExceptionMiddleWare>();
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthentication(); // 🔥 MUST before Authorization
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();

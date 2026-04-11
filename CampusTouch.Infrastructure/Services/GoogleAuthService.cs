@@ -2,25 +2,23 @@
 using CampusTouch.Application.Interfaces;
 using CampusTouch.Infrastructure.Persistance.Identity;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CampusTouch.Infrastructure.Services
 {
     public class GoogleAuthService : IGoogleAuthService
     {
-
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        public GoogleAuthService(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+
+        public GoogleAuthService(
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
         }
+
         public async Task<GoogleUserDto> AuthenticateAsync()
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
@@ -33,40 +31,60 @@ namespace CampusTouch.Infrastructure.Services
             if (email == null)
                 throw new Exception("Email not received");
 
+            // 🔍 STEP 1: Check if user already exists with this Google login
             var user = await _userManager.FindByLoginAsync(
                 info.LoginProvider,
                 info.ProviderKey);
 
             if (user == null)
             {
+                // 🔍 STEP 2: Check if user exists by email
                 user = await _userManager.FindByEmailAsync(email);
 
                 if (user == null)
                 {
-                    // 🆕 New user
+                    var fullname = info.Principal.FindFirstValue(ClaimTypes.Name);
+                    // 🆕 Create new user
                     user = new ApplicationUser
                     {
                         UserName = email,
-                        Email = email
+                        Email = email,
+                        FullName=fullname??"googleuser"
                     };
 
-                    var result = await _userManager.CreateAsync(user);
+                    var createResult = await _userManager.CreateAsync(user);
 
-                    if (!result.Succeeded)
-                        throw new Exception("User creation failed");
+                    if (!createResult.Succeeded)
+                        throw new Exception(string.Join(", ", createResult.Errors.Select(e => e.Description)));
                 }
 
-                // 🔗 Link Google login
-                await _userManager.AddLoginAsync(user, info);
+                // 🔥 STEP 3: LINK GOOGLE LOGIN (SAFE CHECK)
+                var existingLogin = await _userManager.FindByLoginAsync(
+                    info.LoginProvider,
+                    info.ProviderKey);
+
+                if (existingLogin == null)
+                {
+                    var addLoginResult = await _userManager.AddLoginAsync(user, info);
+
+                    if (!addLoginResult.Succeeded)
+                        throw new Exception(string.Join(", ", addLoginResult.Errors.Select(e => e.Description)));
+                }
             }
 
-            // 🔥 CRITICAL FIX: Ensure role for ALL users
+            // ✅ STEP 4: Ensure role exists
             if (!await _userManager.IsInRoleAsync(user, "Applicant"))
             {
-                await _userManager.AddToRoleAsync(user, "Applicant");
+                var roleResult = await _userManager.AddToRoleAsync(user, "Applicant");
+
+                if (!roleResult.Succeeded)
+                    throw new Exception(string.Join(", ", roleResult.Errors.Select(e => e.Description)));
             }
 
-            // ✅ Get updated roles
+            // ✅ STEP 5: Sign in user (for external auth flow)
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            // ✅ STEP 6: Get roles
             var roles = await _userManager.GetRolesAsync(user);
 
             return new GoogleUserDto
@@ -76,8 +94,5 @@ namespace CampusTouch.Infrastructure.Services
                 Roles = roles
             };
         }
-
     }
 }
-
-
