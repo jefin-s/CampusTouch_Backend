@@ -1,6 +1,8 @@
-﻿using CampusTouch.Application.Interfaces;
+﻿using CampusTouch.Application.Features.Attendence.DTO;
+using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using Dapper;
+using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -68,5 +70,26 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
             return count > 0;
         }
+
+
+        public async Task<List<AttendenceViewDto>> GetAttendanceByClassAsync(int classId, DateTime date)
+        {
+            var sql = @"
+SELECT 
+    ad.StudentId, 
+    (s.FirstName + ' ' + s.LastName) AS StudentName, 
+    ad.Status 
+FROM Attendance a
+JOIN AttendenceDetails ad ON ad.AttendanceId = a.Id
+JOIN Students s ON s.Id = ad.StudentId
+WHERE a.ClassId = @classid
+AND CAST(a.AttendanceDate AS DATE) = CAST(@date AS DATE)
+AND a.IsDeleted = 0";
+            var result = await _dbconnection.QueryAsync<AttendenceViewDto>(
+              sql,
+              new { classId, date });
+            return result.ToList();
+
         }
+    }
 }

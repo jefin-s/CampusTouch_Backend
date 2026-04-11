@@ -1,4 +1,5 @@
-﻿using CampusTouch.Domain.Entities;
+﻿using CampusTouch.Application.Features.Attendence.DTO;
+using CampusTouch.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,5 +16,6 @@ namespace CampusTouch.Application.Interfaces
         Task CreateAttendanceDetailsAsync(List<AttendenceDetails> details, IDbTransaction transaction);
 
         Task<bool> ExistsAsync(DateTime date, int classId, int subjectId);
+        Task<List<AttendenceViewDto>> GetAttendanceByClassAsync(int classId, DateTime date);
     }
 }
