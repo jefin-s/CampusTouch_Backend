@@ -39,7 +39,8 @@ namespace CampusTouch.Infrastructure
             services.AddScoped<IStaffRepository, StaffRepository>();
             services.AddScoped<IStaffSubjectRepository,StaffSubjectRepository>();
             services.AddScoped<IGoogleAuthService,GoogleAuthService>();
-
+            services.AddScoped<IClassesRepository, ClassRepository>();
+            services.AddScoped<IAttendenceRepository, AttendenceRepository>();
             services.AddScoped<IJWTService,JwtServices>();
             services.AddScoped<IDbConnection>(sp =>
             new SqlConnection(configuration.GetConnectionString("DefaultConnection")));
