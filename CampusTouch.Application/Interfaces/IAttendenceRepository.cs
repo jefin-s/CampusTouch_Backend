@@ -17,5 +17,9 @@ namespace CampusTouch.Application.Interfaces
 
         Task<bool> ExistsAsync(DateTime date, int classId, int subjectId);
         Task<List<AttendenceViewDto>> GetAttendanceByClassAsync(int classId, DateTime date);
+
+        Task<List<AttendenceViewDto>> GetAttendenceByStudentId(int studentId);
+
+        Task<int?> GetStudentIdByUserIdAsync(string userId);
     }
 }

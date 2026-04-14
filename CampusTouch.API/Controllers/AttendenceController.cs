@@ -32,5 +32,12 @@ namespace CampusTouch.API.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+        [HttpGet("me")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GetMyAttendance()
+        {
+            var result = await _mediator.Send(new GetMyattendencequery());
+            return Ok(result);
+        }
     }
 }
