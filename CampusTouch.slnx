@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="CampusTouch.API/CampusTouch.API.csproj" />
   <Project Path="CampusTouch.Application/CampusTouch.Application.csproj" />
+  <Project Path="CampusTouch.DBSync/CampusTouch.DBSync.csproj" Id="0c1b7224-9466-4d2d-af51-7c2ff701c537" />
   <Project Path="CampusTouch.Domain/CampusTouch.Domain.csproj" />
   <Project Path="CampusTouch.Infrastructure/CampusTouch.Infrastructure.csproj" />
 </Solution>
