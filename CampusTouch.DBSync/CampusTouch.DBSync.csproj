@@ -6,4 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="DefaultScripts\" />
+    <Folder Include="UpgradeScripts\" />
+    <Folder Include="StoredProcedures\" />
+    <Folder Include="Tables\" />
+  </ItemGroup>
+
 </Project>
