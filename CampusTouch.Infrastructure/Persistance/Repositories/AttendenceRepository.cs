@@ -22,17 +22,17 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
         }
         public async Task<int> CreateAttendanceAsync(Attendence attendance, IDbTransaction transaction)
         {
-            var sql = @"
-            INSERT INTO Attendance (AttendanceDate, ClassId, SubjectId, StaffId)
-            VALUES (@AttendanceDate, @ClassId, @SubjectId, @StaffId);
-
-            SELECT CAST(SCOPE_IDENTITY() as int);
-        ";
-
             return await _dbconnection.ExecuteScalarAsync<int>(
-                sql,
-                attendance,
-                transaction
+                "SP_CreateAttendance",
+                new
+                {
+                    AttendanceDate = attendance.AttendanceDate,
+                    ClassId = attendance.ClassId,
+                    SubjectId = attendance.SubjectId,
+                    StaffId = attendance.StaffId
+                },
+                transaction,
+                commandType: CommandType.StoredProcedure
             );
         }
 
@@ -54,62 +54,41 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
         // 🔹 Check Duplicate Attendance
         public async Task<bool> ExistsAsync(DateTime date, int classId, int subjectId)
         {
-            var sql = @"
-            SELECT COUNT(1)
-            FROM Attendance
-            WHERE AttendanceDate = @date
-              AND ClassId = @classId
-              AND SubjectId = @subjectId
-              AND IsDeleted = 0;
-        ";
-
-            var count = await _dbconnection.ExecuteScalarAsync<int>(
-                sql,
-                new { date, classId, subjectId }
+            return await _dbconnection.ExecuteScalarAsync<bool>(
+                "SP_AttendanceExists",
+                new
+                {
+                    AttendanceDate = date,
+                    ClassId = classId,
+                    SubjectId = subjectId
+                },
+                commandType: CommandType.StoredProcedure
             );
-
-            return count > 0;
         }
 
 
         public async Task<List<AttendenceViewDto>> GetAttendanceByClassAsync(int classId, DateTime date)
         {
-            var sql = @"
-SELECT 
-    ad.StudentId, 
-    (s.FirstName + ' ' + s.LastName) AS StudentName, 
-    ad.Status 
-FROM Attendance a
-JOIN AttendenceDetails ad ON ad.AttendanceId = a.Id
-JOIN Students s ON s.Id = ad.StudentId
-WHERE a.ClassId = @classid
-AND CAST(a.AttendanceDate AS DATE) = CAST(@date AS DATE)
-AND a.IsDeleted = 0";
             var result = await _dbconnection.QueryAsync<AttendenceViewDto>(
-              sql,
-              new { classId, date });
-            return result.ToList();
+                "SP_GetAttendenceByClass",
+                new
+                {
+                    classid = classId,
+                    date = date
+                },
+                commandType: CommandType.StoredProcedure
+            );
 
+            return result.ToList();
         }
 
         public async Task<List<AttendenceViewDto>> GetAttendenceByStudentId(int studentId)
         {
-            var sql = @"
-    SELECT 
-        a.AttendanceDate AS Date,
-        sub.Name AS SubjectName,
-        ad.Status
-    FROM Attendance a
-    JOIN AttendenceDetails ad ON ad.AttendanceId = a.Id
-    JOIN Subjects sub ON sub.Id = a.SubjectId
-    WHERE ad.StudentId = @studentId
-      AND a.IsDeleted = 0
-    ORDER BY a.AttendanceDate DESC
-    ";
-
             var result = await _dbconnection.QueryAsync<AttendenceViewDto>(
-                sql,
-                new { studentId });
+                "SP_GetAttendanceByStudentId",
+                new { studentId },
+                commandType: CommandType.StoredProcedure
+            );
 
             return result.ToList();
         }
