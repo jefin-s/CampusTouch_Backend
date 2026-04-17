@@ -164,8 +164,18 @@
             }
         });
     });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") 
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 
-    var app = builder.Build();
+var app = builder.Build();
 
     // ✅ Seed Roles + Admin
     using (var scope = app.Services.CreateScope())
@@ -186,9 +196,10 @@
         app.UseSwaggerUI();
     }
 
-    app.UseMiddleware<GlobalExceptionMiddleWare>();
+app.UseMiddleware<GlobalExceptionMiddleWare>();
 
     app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 
     app.UseAuthentication(); // 🔥 MUST before Authorization
     app.UseAuthorization();

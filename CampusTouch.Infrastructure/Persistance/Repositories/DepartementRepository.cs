@@ -1,64 +1,88 @@
 ﻿using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using Dapper;
-
 using System.Data;
-
 
 namespace CampusTouch.Infrastructure.Persistance.Repositories
 {
-    public class DepartementRepository:IDepartementRepository
+    public class DepartementRepository : IDepartementRepository
     {
         private readonly IDbConnection _connection;
+
         public DepartementRepository(IDbConnection connection)
         {
             _connection = connection;
         }
 
+        // ✅ CREATE
         public async Task<int> CreateAsync(Departement department)
         {
-            var sql = @"INSERT INTO Departments (Name, Description, IsActive, CreatedAt,CreatedBy,isDeleted)
-                VALUES (@Name, @Description,1, @CreatedAt,@CreatedBy,0);
-                SELECT CAST(SCOPE_IDENTITY() as int);";
-
-            return await _connection.QuerySingleAsync<int>(sql, department);
+            return await _connection.ExecuteScalarAsync<int>(
+                "sp_Department_Create",
+                new
+                {
+                    department.Name,
+                    department.Description,
+                    department.CreatedBy
+                },
+                commandType: CommandType.StoredProcedure
+            );
         }
 
-
+        // ✅ GET BY ID
         public async Task<Departement> GetByIdAsync(int id)
         {
-            var sql = "select *from Departments where Id=@id";
-            return await _connection.QueryFirstOrDefaultAsync<Departement>(sql, new { id});
-
+            return await _connection.QueryFirstOrDefaultAsync<Departement>(
+                "sp_Department_GetById",
+                new { Id = id },
+                commandType: CommandType.StoredProcedure
+            );
         }
 
+        // ✅ GET ALL
         public async Task<IEnumerable<Departement>> GetAllAsync()
         {
-            var sql = "select *from   Departments  where isactive=1 order by id";
-            return  await _connection.QueryAsync<Departement>(sql);
+            return await _connection.QueryAsync<Departement>(
+                "sp_Department_GetAll",
+                commandType: CommandType.StoredProcedure
+            );
         }
 
-
-        public async  Task<int> UpdateAsync(Departement department) 
+        // ✅ UPDATE
+        public async Task<int> UpdateAsync(Departement department)
         {
-            var sql= @"update departments set Name=@Name ,Description = @Description,
-                    UpdatedAt = GETUTCDATE()
-                WHERE Id = @Id";
-                return await _connection.ExecuteAsync(sql, department);
-        
+            return await _connection.ExecuteAsync(
+                "sp_Department_Update",
+                new
+                {
+                    department.Id,
+                    department.Name,
+                    department.Description
+                },
+                commandType: CommandType.StoredProcedure
+            );
         }
+
+        // ✅ DELETE (Soft Delete)
         public async Task<int> DeleteAsync(int id)
         {
-            var sql = @"update departments set isactive=0 ,isdeleted=1,UpdatedAt = GETUTCDATE() where Id=@Id";
-            return await _connection.ExecuteAsync(sql, new { Id=id});
+            return await _connection.ExecuteAsync(
+                "sp_Department_Delete",
+                new { Id = id },
+                commandType: CommandType.StoredProcedure
+            );
         }
 
-        public async   Task<bool> DepartemnetExist(string name)
+        // ✅ EXISTS
+        public async Task<bool> DepartemnetExist(string name)
         {
-            var sql = @"select count(1) from departments  where  Name=@name  and isdeleted =0";
-            var count=  await _connection.ExecuteScalarAsync<int>(sql, new { name });
-            return count > 0;
+            var count = await _connection.ExecuteScalarAsync<int>(
+                "sp_Department_Exists",
+                new { Name = name },
+                commandType: CommandType.StoredProcedure
+            );
 
+            return count > 0;
         }
     }
 }
