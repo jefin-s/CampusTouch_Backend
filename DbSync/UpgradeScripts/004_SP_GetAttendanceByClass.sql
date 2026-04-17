@@ -1,6 +1,6 @@
-﻿;CREATE OR ALTER PROCEDURE SP_GetAttendanceByClass
-    @ClassId INT,
-    @AttendanceDate DATE
+﻿;CREATE OR ALTER PROCEDURE SP_GetAttendenceByClass
+    @classid INT,
+    @date DATE
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -12,7 +12,7 @@ BEGIN
     FROM Attendance a
     JOIN AttendenceDetails ad ON ad.AttendanceId = a.Id
     JOIN Students s ON s.Id = ad.StudentId
-    WHERE a.ClassId = @ClassId
-      AND a.AttendanceDate = @AttendanceDate
+    WHERE a.ClassId = @classid
+      AND a.AttendanceDate = @date
       AND a.IsDeleted = 0;
 END;
