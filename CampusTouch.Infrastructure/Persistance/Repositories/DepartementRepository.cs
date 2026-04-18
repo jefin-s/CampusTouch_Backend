@@ -85,4 +85,4 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
             return count > 0;
         }
     }
-}
+}   
