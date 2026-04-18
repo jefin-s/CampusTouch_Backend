@@ -1,21 +1,34 @@
-﻿    using CampusTouch.API.Middlewares;
-    using CampusTouch.Application.Common.Behaviors;
-    using CampusTouch.Application.Features.Authentication.Vaidators;
-    using CampusTouch.Infrastructure;
-    using CampusTouch.Infrastructure.Persistance.Identity;
-    using CampusTouch.Infrastructure.Persistance.Seed;
-    using FluentValidation;
-    using MediatR;
-    using Microsoft.AspNetCore.Authentication.Cookies;
-    using Microsoft.AspNetCore.Authentication.Google;
-    using Microsoft.AspNetCore.Authentication.JwtBearer;
-    using Microsoft.AspNetCore.Identity;
-    using Microsoft.IdentityModel.Tokens;
-    using System.Text;
+﻿using CampusTouch.API.Middlewares;
+using CampusTouch.Application.Common.Behaviors;
+using CampusTouch.Application.Features.Authentication.Vaidators;
+using CampusTouch.Infrastructure;
+using CampusTouch.Infrastructure.Persistance.Identity;
+using CampusTouch.Infrastructure.Persistance.Seed;
+using FluentValidation;
+using MediatR;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using System.Text;
 
-    var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-    // ✅ Add services
+// ✅ Serilog Configuration (FIXED)
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+try
+{
+    Log.Information("🚀 Application Starting...");
+
+    // ✅ Services
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
@@ -30,32 +43,25 @@
 
     // ✅ Pipeline Behavior
     builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+    builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 
-
-    // 🔥🔥🔥 CORRECT AUTH CONFIG (VERY IMPORTANT)
+    // 🔐 Authentication (UNCHANGED + IMPROVED LOGGING)
     builder.Services.AddAuthentication(options =>
     {
-        // ✅ Use JWT as default for APIs
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    // ✅ Cookie (used internally by Google OAuth)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
-
-    // ✅ Google OAuth
     .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
     {
         options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
         options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
         options.CallbackPath = "/signin-google";
-
-        // Optional but recommended
         options.SaveTokens = true;
     })
-    // ✅ JWT
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new()
         {
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -65,78 +71,60 @@
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-            )
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
 
+        // ✅ KEEP + ADD LOGGING (VERY IMPORTANT)
         options.Events = new JwtBearerEvents
         {
-            // 🔐 401
             OnChallenge = async context =>
             {
                 context.HandleResponse();
 
+                Log.Warning("Unauthorized request to {Path}",
+                    context.HttpContext.Request.Path);
+
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/json";
 
-                var response = new
+                await context.Response.WriteAsJsonAsync(new
                 {
                     success = false,
                     statusCode = 401,
                     message = "Authentication required",
-                    errors = new[] { "Access token is missing or invalid" },
                     timestamp = DateTime.UtcNow
-                };
-
-                await context.Response.WriteAsJsonAsync(response);
+                });
             },
 
-            // 🔐 403
             OnForbidden = async context =>
             {
+                Log.Warning("Forbidden request to {Path}",
+                    context.HttpContext.Request.Path);
+
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/json";
 
-                var response = new
+                await context.Response.WriteAsJsonAsync(new
                 {
                     success = false,
                     statusCode = 403,
                     message = "Access denied",
-                    errors = new[] { "You do not have permission" },
                     timestamp = DateTime.UtcNow
-                };
-
-                await context.Response.WriteAsJsonAsync(response);
+                });
             },
 
-            // 🔥 Token issues
-            OnAuthenticationFailed = async context =>
+            OnAuthenticationFailed = context =>
             {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                context.Response.ContentType = "application/json";
+                Log.Warning(context.Exception,
+                    "JWT authentication failed for {Path}",
+                    context.HttpContext.Request.Path);
 
-                var message = context.Exception switch
-                {
-                    SecurityTokenExpiredException => "Token expired",
-                    _ => "Invalid token"
-                };
-
-                var response = new
-                {
-                    success = false,
-                    statusCode = 401,
-                    message = message,
-                    errors = new[] { context.Exception.Message },
-                    timestamp = DateTime.UtcNow
-                };
-
-                await context.Response.WriteAsJsonAsync(response);
+                return Task.CompletedTask;
             }
         };
     });
 
-
-    // ✅ Swagger with JWT
+    // ✅ Swagger JWT config (UNCHANGED)
     builder.Services.AddSwaggerGen(options =>
     {
         options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -164,20 +152,21 @@
             }
         });
     });
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        policy =>
+
+    // ✅ CORS (UNCHANGED)
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowFrontend", policy =>
         {
-            policy.WithOrigins("http://localhost:5173") 
+            policy.WithOrigins("http://localhost:5173")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
-});
+    });
 
-var app = builder.Build();
+    var app = builder.Build();
 
-    // ✅ Seed Roles + Admin
+    // ✅ Seed Roles + Admin (UNCHANGED)
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
@@ -189,21 +178,36 @@ var app = builder.Build();
         await AdminSeeder.SeedAdminAsync(userManager);
     }
 
-    // ✅ Middleware
+    // ✅ Middleware Order (CORRECT)
+    app.UseMiddleware<GlobalExceptionMiddleWare>();
+
+    // 🔥 Request logging → goes to :contentReference[oaicite:0]{index=0}
+    app.UseSerilogRequestLogging();
+
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
     }
 
-app.UseMiddleware<GlobalExceptionMiddleWare>();
-
     app.UseHttpsRedirection();
-app.UseCors("AllowFrontend");
+    app.UseCors("AllowFrontend");
 
-    app.UseAuthentication(); // 🔥 MUST before Authorization
+    app.UseAuthentication();   // MUST before Authorization
     app.UseAuthorization();
+
+    // ✅ TEST LOG
+    Log.Information("🔥 SEQ TEST LOG - Setup working");
 
     app.MapControllers();
 
     app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application failed to start");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

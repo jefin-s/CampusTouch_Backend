@@ -1,6 +1,83 @@
-﻿using CampusTouch.Application.Interfaces;
+﻿//using CampusTouch.Application.Interfaces;
+//using CampusTouch.Domain.Entities;
+//using MediatR;
+//using System.Data;
+
+//public class CreateAttendanceHandler : IRequestHandler<CreateAttendanceCommand, int>
+//{
+//    private readonly IAttendenceRepository _repo;
+//    private readonly IDbConnection _connection;
+//    private readonly ICurrentUserService _currentUser;
+
+//    public CreateAttendanceHandler(
+//        IAttendenceRepository repo,
+//        IDbConnection connection,
+//        ICurrentUserService currentUser)
+//    {
+//        _repo = repo;
+//        _connection = connection;
+//        _currentUser = currentUser;
+//    }
+
+//    public async Task<int> Handle(CreateAttendanceCommand request, CancellationToken cancellationToken)
+//    {
+//        // 🔐 Authorization (also fix message)
+//        if (!_currentUser.IsAdmin)
+//            throw new UnauthorizedAccessException("Only staff can mark attendance");
+
+//        // 🔥 Duplicate check
+//        if (await _repo.ExistsAsync(request.Date, request.ClassId, request.SubjectId))
+//            throw new Exception("Attendance already marked");
+
+//        // ✅ OPEN CONNECTION (IMPORTANT)
+//        if (_connection.State == ConnectionState.Closed)
+//            _connection.Open();
+
+//        using var transaction = _connection.BeginTransaction();
+
+//        try
+//        {
+//            // 🧱 Create master
+//            var attendance = new Attendence
+//            {
+//                AttendanceDate = request.Date,
+//                ClassId = request.ClassId,
+//                SubjectId = request.SubjectId,
+//                StaffId= _currentUser.UserId,
+
+//            };
+
+//            var attendanceId = await _repo.CreateAttendanceAsync(attendance, transaction);
+
+//            // 🧱 Create details
+//            var details = request.Students.Select(s => new AttendenceDetails
+//            {
+//                AttendanceId = attendanceId,
+//                StudentId = s.StudentId,
+//                Status = s.Status
+//            }).ToList();
+
+//            await _repo.CreateAttendanceDetailsAsync(details, transaction);
+
+//            // ✅ COMMIT
+//            transaction.Commit();
+
+//            return attendanceId;
+//        }
+//        catch
+//        {
+//            // ❌ ROLLBACK
+//            transaction.Rollback();
+//            throw;
+//        }
+//    }
+//}
+
+using CampusTouch.Application.Common.Exceptions;
+using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System.Data;
 
 public class CreateAttendanceHandler : IRequestHandler<CreateAttendanceCommand, int>
@@ -8,28 +85,49 @@ public class CreateAttendanceHandler : IRequestHandler<CreateAttendanceCommand, 
     private readonly IAttendenceRepository _repo;
     private readonly IDbConnection _connection;
     private readonly ICurrentUserService _currentUser;
+    private readonly ILogger<CreateAttendanceHandler> _logger;
 
     public CreateAttendanceHandler(
         IAttendenceRepository repo,
         IDbConnection connection,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        ILogger<CreateAttendanceHandler> logger)
     {
         _repo = repo;
         _connection = connection;
         _currentUser = currentUser;
+        _logger = logger;
     }
 
     public async Task<int> Handle(CreateAttendanceCommand request, CancellationToken cancellationToken)
     {
-        // 🔐 Authorization (also fix message)
+        var userId = _currentUser.UserId;
+
+        // ✅ Attempt log
+        _logger.LogInformation(
+            "User {UserId} attempting to mark attendance for Class {ClassId}, Subject {SubjectId} on {Date}",
+            userId, request.ClassId, request.SubjectId, request.Date);
+
+        // 🔐 Authorization
         if (!_currentUser.IsAdmin)
+        {
+            _logger.LogWarning(
+                "Unauthorized attendance attempt by User {UserId}",
+                userId);
+
             throw new UnauthorizedAccessException("Only staff can mark attendance");
+        }
 
-        // 🔥 Duplicate check
+        // 🔁 Duplicate check
         if (await _repo.ExistsAsync(request.Date, request.ClassId, request.SubjectId))
-            throw new Exception("Attendance already marked");
+        {
+            _logger.LogWarning(
+                "Duplicate attendance attempt for Class {ClassId}, Subject {SubjectId}, Date {Date} by User {UserId}",
+                request.ClassId, request.SubjectId, request.Date, userId);
 
-        // ✅ OPEN CONNECTION (IMPORTANT)
+            throw new BuisnessRuleException("Attendance already marked");
+        }
+
         if (_connection.State == ConnectionState.Closed)
             _connection.Open();
 
@@ -43,8 +141,7 @@ public class CreateAttendanceHandler : IRequestHandler<CreateAttendanceCommand, 
                 AttendanceDate = request.Date,
                 ClassId = request.ClassId,
                 SubjectId = request.SubjectId,
-                StaffId= _currentUser.UserId,
-
+                StaffId = userId
             };
 
             var attendanceId = await _repo.CreateAttendanceAsync(attendance, transaction);
@@ -59,15 +156,26 @@ public class CreateAttendanceHandler : IRequestHandler<CreateAttendanceCommand, 
 
             await _repo.CreateAttendanceDetailsAsync(details, transaction);
 
-            // ✅ COMMIT
+            // ✅ Commit
             transaction.Commit();
+
+            // ✅ Audit log (VERY IMPORTANT)
+            _logger.LogInformation(
+                "User {UserId} marked attendance {AttendanceId} for {StudentCount} students (Class {ClassId}, Subject {SubjectId})",
+                userId, attendanceId, details.Count, request.ClassId, request.SubjectId);
 
             return attendanceId;
         }
-        catch
+        catch (Exception ex)
         {
-            // ❌ ROLLBACK
             transaction.Rollback();
+
+            // ❌ Error log (CRITICAL)
+            _logger.LogError(
+                ex,
+                "Error marking attendance for Class {ClassId}, Subject {SubjectId}, Date {Date} by User {UserId}",
+                request.ClassId, request.SubjectId, request.Date, userId);
+
             throw;
         }
     }
