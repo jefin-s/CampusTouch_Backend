@@ -1,81 +1,99 @@
 ﻿using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using Dapper;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CampusTouch.Infrastructure.Persistance.Repositories
 {
-    public class SemseterRepository:ISemsterRepository
+    public class SemseterRepository : ISemsterRepository
     {
         private readonly IDbConnection _dbconnection;
+
         public SemseterRepository(IDbConnection dbConnection)
         {
             _dbconnection = dbConnection;
         }
 
-
+  
         public async Task<int> CreateAsync(Semesters semester)
         {
-            var query = @"
-                INSERT INTO Semester (Name, OrderNumber, CourseId, IsActive, CreatedA)
-                VALUES (@Name, @OrderNumber, @CourseId, 1, GETDATE());
-                SELECT CAST(SCOPE_IDENTITY() as int);
-            ";
-            return  await _dbconnection.ExecuteScalarAsync<int>(query, semester);
+            return await _dbconnection.ExecuteScalarAsync<int>(
+                "sp_Semester_Create",
+                new
+                {
+                    semester.Name,
+                    semester.OrderNumber,
+                    semester.CourseId
+                },
+                commandType: CommandType.StoredProcedure
+            );
         }
 
+      
         public async Task<IEnumerable<Semesters>> GetAllAsync()
         {
-            var query = "SELECT * FROM Semester where isactive=1";
-            return await _dbconnection.QueryAsync<Semesters>(query);
-
+            return await _dbconnection.QueryAsync<Semesters>(
+                "sp_Semester_GetAll",
+                commandType: CommandType.StoredProcedure
+            );
         }
+
+  
         public async Task<Semesters?> GetByIdAsync(int id)
         {
-            var query = "SELECT * FROM Semester WHERE Id = @Id AND IsActive=1";
-            return await _dbconnection.QueryFirstOrDefaultAsync<Semesters>(query, new { Id = id });
+            return await _dbconnection.QueryFirstOrDefaultAsync<Semesters>(
+                "sp_Semester_GetById",
+                new { Id = id },
+                commandType: CommandType.StoredProcedure
+            );
         }
+
+       
         public async Task<bool> UpdateAsync(Semesters semester)
         {
-                       var query = @"
-                UPDATE Semesters
-                SET Name = @Name, OrderNumber = @OrderNumber, CourseId = @CourseId, UpdatedAt = GETDATE()
-                WHERE Id = @Id AND IsActive=1
-            ";
-            var rowsAffected = await _dbconnection.ExecuteAsync(query, semester);
-            return rowsAffected > 0;
+            var rows = await _dbconnection.ExecuteAsync(
+                "sp_Semester_Update",
+                new
+                {
+                    semester.Id,
+                    semester.Name,
+                    semester.OrderNumber,
+                    semester.CourseId
+                },
+                commandType: CommandType.StoredProcedure
+            );
 
+            return rows > 0;
         }
 
-        public async Task<bool> DeleteAsync(int id,string userid)
+ 
+        public async Task<bool> DeleteAsync(int id, string userid)
         {
-            var query = @"UPDATE Semester 
-                  SET IsDeleted = 1,
-                      DeletedAt = GETUTCDATE(),
-                      DeletedBy = @userid
-                  WHERE Id = @Id";
-            var rowsAffected = await _dbconnection.ExecuteAsync(query, new { Id = id,userid=userid });
-            return rowsAffected > 0;
+            var rows = await _dbconnection.ExecuteAsync(
+                "sp_Semester_Delete",
+                new
+                {
+                    Id = id,
+                    UserId = userid
+                },
+                commandType: CommandType.StoredProcedure
+            );
+
+            return rows > 0;
         }
 
+  
         public async Task<bool> SemExist(int courseId, int orderNumber)
         {
-            var query = @"SELECT COUNT(1)
-                  FROM Semester
-                  WHERE CourseId = @CourseId
-                  AND OrderNumber = @OrderNumber
-                  AND IsDeleted = 0";
-
-            var count = await _dbconnection.ExecuteScalarAsync<int>(query, new
-            {
-                CourseId = courseId,
-                OrderNumber = orderNumber
-            });
+            var count = await _dbconnection.ExecuteScalarAsync<int>(
+                "sp_Semester_Exists",
+                new
+                {
+                    CourseId = courseId,
+                    OrderNumber = orderNumber
+                },
+                commandType: CommandType.StoredProcedure
+            );
 
             return count > 0;
         }
