@@ -21,11 +21,12 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
+    # ✅ FIX HERE
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore CampusTouch.sln
 
     - name: Build project
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build CampusTouch.sln --no-restore --configuration Release
 
     - name: Run Tests 🔥
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test CampusTouch.sln --no-build --verbosity normal
