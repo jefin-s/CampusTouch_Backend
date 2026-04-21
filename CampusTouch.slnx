@@ -1,8 +1,2 @@
 <Solution>
-  <Project Path="CampusTouch.API/CampusTouch.API.csproj" />
-  <Project Path="CampusTouch.Application/CampusTouch.Application.csproj" />
-  <Project Path="CampusTouch.Domain/CampusTouch.Domain.csproj" />
-  <Project Path="CampusTouch.Infrastructure/CampusTouch.Infrastructure.csproj" />
-  <Project Path="CollegeErp.Tests/CollegeErp.Tests.csproj" Id="32832770-c9e1-439e-ad99-9be16d0c7aeb" />
-  <Project Path="DbSync/DbSync.csproj" Id="a0855ef2-0e97-46c0-a345-026c512c99f4" />
 </Solution>
