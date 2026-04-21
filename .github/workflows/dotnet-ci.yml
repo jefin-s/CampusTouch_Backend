@@ -26,7 +26,7 @@ jobs:
       run: dotnet restore CampusTouch.sln
 
     - name: Build project
-      run: dotnet build CampusTouch.sln --no-restore --configuration Release
+      run: dotnet build CampusTouch.sln --configuration Release
 
     - name: Run Tests 🔥
-      run: dotnet test CampusTouch.sln --no-build --verbosity normal
+      run: dotnet test CampusTouch.sln --verbosity normal
