@@ -34,7 +34,7 @@ try
     builder.Services.AddSwaggerGen();
     builder.Services.AddInfrastructure(builder.Configuration);
 
-    // ✅ MediatR
+    // ✅ MediatRa
     builder.Services.AddMediatR(cfg =>
         cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
 
