@@ -3,7 +3,7 @@
 
 namespace CampusTouch.Infrastructure.Persistance.Seed
 {
-    public  class RoleSeeder
+    public  class RoleSeeder    
     {
         public static async Task SeedAsync(RoleManager<IdentityRole> roleManager)
         {
