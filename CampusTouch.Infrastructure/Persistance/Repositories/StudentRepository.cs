@@ -1,4 +1,5 @@
-﻿using CampusTouch.Application.Interfaces;
+﻿using CampusTouch.Application.Features.Students.DTOs;
+using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using Dapper;
 using System.Data;
@@ -35,13 +36,13 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
 
 
         }
-        public async Task<Student?> GetStudentsById(int id)
-        {
-            var query = "Select *from students  where id=@id";
-            var result = await _dbConnection.QueryFirstOrDefaultAsync<Student>(query, new { id = id });
-            return result;
+            public async Task<Student?> GetStudentsById(int id)
+            {
+                var query = "Select *from students  where id=@id";
+                var result = await _dbConnection.QueryFirstOrDefaultAsync<Student>(query, new { id = id });
+                return result;
 
-        }
+            }
         public async Task<int> CreateStudentAsync(Student student)
         {
             var sql = @"INSERT INTO Students
@@ -138,10 +139,35 @@ AND YEAR(CreatedAt) = @Year";
             return maxSequence + 1;
         }
 
-        public async Task<Student> GetStudentByUserId(string userId)
+        public async Task<StudentMyProfileDTO> GetStudentByUserId(string userId)
         {
-            var query = "Select *from students  where UserId=@UserId and isDeleted=0";
-            var result = await _dbConnection.QueryFirstOrDefaultAsync<Student>(query, new { UserId = userId });
+            var query = @"
+SELECT 
+    s.Id,
+    s.FirstName,
+    s.LastName,
+    s.Email,
+    s.PhoneNumber,
+    s.Address,
+    s.Gender,
+    s.DateOfBirth,
+    s.AdmissionDate,
+    s.BloodGroup,
+    s.ProfileImageUrl,
+
+    s.CourseId,
+    c.Name AS CourseName,
+
+    s.DepartmentId,
+    d.Name AS DepartmentName
+
+FROM Students s
+LEFT JOIN Courses c ON s.CourseId = c.Id
+LEFT JOIN Departments d ON s.DepartmentId = d.Id
+
+WHERE s.UserId = @UserId AND s.IsDeleted = 0
+";
+            var result = await _dbConnection.QueryFirstOrDefaultAsync<StudentMyProfileDTO>(query, new { UserId = userId });
             return result;
         }
     }

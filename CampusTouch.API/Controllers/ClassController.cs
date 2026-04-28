@@ -23,7 +23,7 @@ public class ClassesController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetAll()
     {
         return Ok(await _mediator.Send(new GetAllClassesQuery()));

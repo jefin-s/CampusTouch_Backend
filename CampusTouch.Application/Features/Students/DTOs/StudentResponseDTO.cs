@@ -13,5 +13,7 @@ namespace CampusTouch.Application.Features.Students.DTOs
         public string FullName { get; set; }
         public string? Email { get; set; }
         public bool IsActive { get; set; }
+
+        public string ? ProfileImageUrl { get; set; }
     }
 }

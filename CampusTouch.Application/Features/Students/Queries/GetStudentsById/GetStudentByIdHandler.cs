@@ -26,6 +26,8 @@ namespace CampusTouch.Application.Features.Students.Queries.GetStudentsById
                 Email = students.Email,
                 FullName = students.FirstName + "" + students.LastName,
                 IsActive = students.IsActive,
+                ProfileImageUrl = students.ProfileImageUrl
+                
             };
         }
     }

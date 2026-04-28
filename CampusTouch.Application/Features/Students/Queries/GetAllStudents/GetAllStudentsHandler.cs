@@ -28,6 +28,7 @@ namespace CampusTouch.Application.Features.Students.Queries.GetAllStudents
                FullName=s.FirstName+""+s.LastName,
                Email=s.Email,
                IsActive=s.IsActive,
+               ProfileImageUrl=s.ProfileImageUrl
             });
             return result;
         }

@@ -109,13 +109,13 @@ public class CreateAttendanceHandler : IRequestHandler<CreateAttendanceCommand, 
             userId, request.ClassId, request.SubjectId, request.Date);
 
         // 🔐 Authorization
-        if (!_currentUser.IsAdmin)
+        if (_currentUser.IsAdmin)
         {
             _logger.LogWarning(
                 "Unauthorized attendance attempt by User {UserId}",
                 userId);
 
-            throw new UnauthorizedAccessException("Only staff can mark attendance");
+            throw new UnauthorizedAccessException("Admin Cannot marked attendence");
         }
 
         // 🔁 Duplicate check

@@ -40,7 +40,13 @@ namespace CampusTouch.API.Controllers
         {
             var result = await _mediator.Send(new GoogleLoginCommand());
 
-            return Ok(result);
+            var token = result.Token;
+            var email = result.Email;
+
+            // 🔥 Redirect to frontend
+            var redirectUrl = $"http://localhost:5173/auth/callback?token={token}&email={email}";
+
+            return Redirect(redirectUrl);
         }
     }
 }

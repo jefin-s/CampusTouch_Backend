@@ -17,7 +17,7 @@ namespace CampusTouch.API.Controllers
 
         }
         [HttpPost("mark")]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles ="Staff")]
         public async Task<IActionResult> MarkAttendance(CreateAttendanceCommand command)
         {
             var result = await _mediator.Send(command);

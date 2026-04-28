@@ -4,6 +4,7 @@ using CampusTouch.Application.Features.ApproveStudent.Command;
 using CampusTouch.Application.Features.Students.Commands;
 using CampusTouch.Application.Features.Students.DTOs;
     using CampusTouch.Application.Features.Students.Queries.GetAllStudents;
+using CampusTouch.Application.Features.Students.Queries.GetMyProfile;
 using CampusTouch.Application.Features.Students.Queries.GetStudentsById;
 using CampusTouch.Application.Interfaces;
 using MediatR;
@@ -188,6 +189,20 @@ namespace CampusTouch.API.Controllers
             var result = await _mediator.Send(command);
 
             return result ? Ok("Approved") : BadRequest("Failed");
+        }
+
+        [HttpGet("profile")]
+        [Authorize(Roles = "Student")]
+        public async Task<ActionResult<ApiResponse<StudentMyProfileDTO>>> GetMyProfile()
+        {
+            var result = await _mediator.Send(new GetMyProfileQuery());
+
+            return Ok(new ApiResponse<StudentMyProfileDTO>
+            {
+                Success = true,
+                Message = "Profile fetched successfully",
+                Data = result
+            });
         }
     }
     }

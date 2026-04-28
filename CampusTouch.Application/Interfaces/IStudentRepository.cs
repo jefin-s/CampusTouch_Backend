@@ -1,6 +1,7 @@
 ﻿
 
-    using CampusTouch.Domain.Entities;
+using CampusTouch.Application.Features.Students.DTOs;
+using CampusTouch.Domain.Entities;
 
     namespace CampusTouch.Application.Interfaces
     {
@@ -17,6 +18,6 @@
         Task <bool> DeleteStudent(int id,string userid);    
         Task <int> GetNextAdmissionSequence(int deptId);
 
-        Task<Student> GetStudentByUserId(string userId);
+        Task<StudentMyProfileDTO> GetStudentByUserId(string userId);
     }
     }

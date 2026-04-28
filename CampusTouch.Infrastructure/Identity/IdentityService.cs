@@ -182,6 +182,45 @@ namespace CampusTouch.Infrastructure.Identity
             };
         }
 
+        //public async Task PromoteToStudentAsync(string userId)
+        //{
+        //    var user = await _userManager.FindByIdAsync(userId);
+
+        //    if (user == null)
+        //        throw new NotFoundException("User not found");
+
+        //    var currentRoles = await _userManager.GetRolesAsync(user);
+
+        //    // Already a Student
+        //    if (currentRoles.Contains(Roles.Student))
+        //        throw new ValidationException("User is already a Student");
+
+        //    // Prevent Admin misuse
+        //    if (currentRoles.Contains(Roles.Admin))
+        //        throw new ValidationException("Admin cannot be promoted to Student");
+
+        //    // Must be Applicant
+        //    if (!currentRoles.Contains(Roles.Applicant))
+        //        throw new ValidationException("User is not an Applicant");
+
+        //    // 🔥 Remove Applicant role
+        //    var removeResult = await _userManager.RemoveFromRoleAsync(user, Roles.Applicant);
+
+        //    if (!removeResult.Succeeded)
+        //    {
+        //        var errors = string.Join(", ", removeResult.Errors.Select(e => e.Description));
+        //        throw new BuisnessRuleException(errors);
+        //    }
+
+        //    // 🔥 Add Student role
+        //    var addResult = await _userManager.AddToRoleAsync(user, Roles.Student);
+
+        //    if (!addResult.Succeeded)
+        //    {
+        //        var errors = string.Join(", ", addResult.Errors.Select(e => e.Description));
+        //        throw new BuisnessRuleException(errors);
+        //    }
+        //}
         public async Task PromoteToStudentAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -189,21 +228,21 @@ namespace CampusTouch.Infrastructure.Identity
             if (user == null)
                 throw new NotFoundException("User not found");
 
-            var currentRoles = await _userManager.GetRolesAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
 
-            // Already a Student
-            if (currentRoles.Contains(Roles.Student))
-                throw new ValidationException("User is already a Student");
+            // ✅ Idempotent (VERY IMPORTANT)
+            if (roles.Contains(Roles.Student))
+                return;
 
-            // Prevent Admin misuse
-            if (currentRoles.Contains(Roles.Admin))
+            // ❌ Prevent Admin misuse
+            if (roles.Contains(Roles.Admin))
                 throw new ValidationException("Admin cannot be promoted to Student");
 
-            // Must be Applicant
-            if (!currentRoles.Contains(Roles.Applicant))
+            // ❌ Must be Applicant
+            if (!roles.Contains(Roles.Applicant))
                 throw new ValidationException("User is not an Applicant");
 
-            // 🔥 Remove Applicant role
+            // 🔥 Remove Applicant
             var removeResult = await _userManager.RemoveFromRoleAsync(user, Roles.Applicant);
 
             if (!removeResult.Succeeded)
@@ -212,7 +251,7 @@ namespace CampusTouch.Infrastructure.Identity
                 throw new BuisnessRuleException(errors);
             }
 
-            // 🔥 Add Student role
+            // 🔥 Add Student
             var addResult = await _userManager.AddToRoleAsync(user, Roles.Student);
 
             if (!addResult.Succeeded)
