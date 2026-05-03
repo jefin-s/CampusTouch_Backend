@@ -1,4 +1,5 @@
-﻿
+﻿IF OBJECT_ID('dbo.Classes', 'U') IS NULL
+BEGIN
 
 CREATE TABLE [dbo].[classes](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -49,3 +50,4 @@ REFERENCES [dbo].[Semester] ([id]);
 ALTER TABLE [dbo].[classes] CHECK CONSTRAINT [FK_Classes_Semester];
 
 
+END

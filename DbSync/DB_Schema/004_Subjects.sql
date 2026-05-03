@@ -1,4 +1,5 @@
-﻿
+﻿IF OBJECT_ID('dbo.Subjects', 'U') IS NULL
+BEGIN
 
 CREATE TABLE [dbo].[Subjects](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -46,3 +47,4 @@ ON DELETE CASCADE;
 ALTER TABLE [dbo].[Subjects] CHECK CONSTRAINT [FK_Subject_Semester];
 
 
+END

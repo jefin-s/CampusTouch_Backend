@@ -1,4 +1,5 @@
-﻿
+﻿IF OBJECT_ID('dbo.Staff', 'U') IS NULL
+BEGIN
 CREATE TABLE [dbo].[staff](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[userId] [nvarchar](450) NOT NULL,
@@ -29,4 +30,5 @@ ALTER TABLE [dbo].[staff] ADD  DEFAULT ((1)) FOR [IsActive];
 ALTER TABLE [dbo].[staff]  WITH CHECK ADD FOREIGN KEY([DepartmentId])
 REFERENCES [dbo].[Departments] ([Id]);
 
+END
 

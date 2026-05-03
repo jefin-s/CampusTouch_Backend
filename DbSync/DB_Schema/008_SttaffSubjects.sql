@@ -1,4 +1,5 @@
-﻿
+﻿IF OBJECT_ID('dbo.StaffSubject', 'U') IS NULL
+BEGIN
 
 CREATE TABLE [dbo].[StaffSubject](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -21,3 +22,4 @@ ALTER TABLE [dbo].[StaffSubject]  WITH CHECK ADD FOREIGN KEY([SubjectID])
 REFERENCES [dbo].[Subjects] ([Id]);
 
 
+END

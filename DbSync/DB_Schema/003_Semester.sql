@@ -1,4 +1,6 @@
 ﻿
+IF OBJECT_ID('dbo.Semester', 'U') IS NULL
+BEGIN
 CREATE TABLE [dbo].[Semester](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[name] [nvarchar](100) NOT NULL,
@@ -41,3 +43,4 @@ ON DELETE CASCADE;
 ALTER TABLE [dbo].[Semester] CHECK CONSTRAINT [Fk_Semester_course];
 
 
+END

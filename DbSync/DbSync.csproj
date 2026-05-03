@@ -8,7 +8,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="UpgradeScripts\*.sql" CopyToOutputDirectory="Always" />
+		<None Include="DB_Schema\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="UpgradeScripts\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="StoredProcedures\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="DefaultScripts\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 

@@ -1,4 +1,5 @@
-﻿
+﻿IF OBJECT_ID('dbo.Departments', 'U') IS NULL
+BEGIN
 
 CREATE TABLE [dbo].[Departments](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -28,4 +29,4 @@ ALTER TABLE [dbo].[Departments] ADD  DEFAULT (getutcdate()) FOR [CreatedAt];
 
 ALTER TABLE [dbo].[Departments] ADD  DEFAULT ((0)) FOR [IsDeleted];
 
-
+END

@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.35" />
+    <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.4.19" />
     <PackageReference Include="FluentValidation" Version="11.7.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.7.0" />
     <PackageReference Include="MediatR" Version="12.1.1" />
@@ -17,6 +19,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
@@ -29,6 +32,10 @@
     <ProjectReference Include="..\CampusTouch.Application\CampusTouch.Application.csproj" />
     <ProjectReference Include="..\CampusTouch.Domain\CampusTouch.Domain.csproj" />
     <ProjectReference Include="..\CampusTouch.Infrastructure\CampusTouch.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Keys\" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,6 @@
 ﻿
+IF OBJECT_ID('dbo.Attendance', 'U') IS NULL
+BEGIN
 
 CREATE TABLE [dbo].[Attendance](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -48,3 +50,4 @@ REFERENCES [dbo].[Subjects] ([Id]);
 ALTER TABLE [dbo].[Attendance] CHECK CONSTRAINT [FK_Attendance_Subject];
 
 
+END

@@ -1,4 +1,5 @@
-﻿
+﻿IF OBJECT_ID('dbo.Students', 'U') IS NULL
+BEGIN 
 
 CREATE TABLE [dbo].[Students](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -55,3 +56,4 @@ ALTER TABLE [dbo].[Students] ADD  DEFAULT (getdate()) FOR [CreatedAt];
 ALTER TABLE [dbo].[Students] ADD  DEFAULT ((0)) FOR [isDeleted];
 
 
+END
