@@ -4,13 +4,13 @@
     {
         public int Id { get; set; }
 
-        public string AdmissionNumber { get; set; }
-        public int CourseId { get; set; }
-        public int DepartmentId { get; set; }
+        public string? AdmissionNumber { get; set; }
+        public int? CourseId { get; set; }
+        public int? DepartmentId { get; set; }
 
         public DateTime? AdmissionDate { get; set; }
 
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
         public string? LastName { get; set; }
 
         public DateTime? DateOfBirth { get; set; }

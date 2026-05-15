@@ -5,6 +5,6 @@ using MediatR;
 
 namespace CampusTouch.Application.Features.Students.Queries.GetAllStudents
 {
-    public  record GetAllStudentsQuery(int pageNumber,int pageSize,string? Search):IRequest<IEnumerable<StudentResponseDTO>>;
+    public  record GetAllStudentsQuery(int pageNumber,int pageSize,string? Search):IRequest<PaginatedResult<StudentResponseDTO>>;
     
 }

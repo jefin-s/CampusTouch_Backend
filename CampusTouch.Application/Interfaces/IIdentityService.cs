@@ -22,6 +22,7 @@ namespace CampusTouch.Application.Interfaces
         Task<LoginResponseDTO> RefreshTokenAsync(string refreshToken);
 
         Task PromoteToStudentAsync(string userId);
-         //Task PromoteToFacultyAsync(string userId, string departmentId);
+        //Task PromoteToFacultyAsync(string userId, string departmentId);
+        Task<bool> UserNameExists(string username);
     }
 }

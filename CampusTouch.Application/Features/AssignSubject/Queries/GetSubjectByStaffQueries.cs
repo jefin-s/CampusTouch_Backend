@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using CampusTouch.Application.Features.AssignSubject.DTOs;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CampusTouch.Application.Features.AssignSubject.Queries
 {
-    public  class GetSubjectByStaffQueries:IRequest<List<int>>
+    public  class GetSubjectByStaffQueries:IRequest<List<StaffSubjectDTO>>
     {
         public int StaffId { get; set; }
     }

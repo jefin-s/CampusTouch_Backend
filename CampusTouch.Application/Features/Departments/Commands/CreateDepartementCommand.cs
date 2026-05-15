@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 namespace CampusTouch.Application.Features.Departments.Commands
 {
-    public record CreateDepartementCommand(string Name,string Description):IRequest<int>;
+    public record CreateDepartementCommand(string Name,string Description,string code):IRequest<int>;
     
 }

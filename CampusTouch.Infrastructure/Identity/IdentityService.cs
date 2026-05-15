@@ -259,6 +259,15 @@ namespace CampusTouch.Infrastructure.Identity
                 var errors = string.Join(", ", addResult.Errors.Select(e => e.Description));
                 throw new BuisnessRuleException(errors);
             }
+
         }
+        public async Task<bool> UserNameExists(string username)
+        {
+            var user = await _userManager
+                .FindByNameAsync(username);
+
+            return user != null;
+        }
+
     }
 }

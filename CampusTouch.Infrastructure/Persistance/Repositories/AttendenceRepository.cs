@@ -37,12 +37,30 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
         }
 
         // 🔹 Create AttendanceDetails (Child - Bulk Insert)
-        public async Task CreateAttendanceDetailsAsync(List<AttendenceDetails> details, IDbTransaction transaction)
+        public async Task CreateAttendanceDetailsAsync(
+     List<AttendenceDetails> details,
+     IDbTransaction transaction)
         {
             var sql = @"
-            INSERT INTO AttendenceDetails (AttendanceId, StudentId, Status)
-            VALUES (@AttendanceId, @StudentId, @Status);
-        ";
+    INSERT INTO AttendenceDetails
+    (
+        AttendanceId,
+        StudentId,
+        Status,
+        Remark,
+        MarkedAt,
+        IsEdited
+    )
+    VALUES
+    (
+        @AttendanceId,
+        @StudentId,
+        @Status,
+        @Remark,
+        @MarkedAt,
+        @IsEdited
+    );
+    ";
 
             await _dbconnection.ExecuteAsync(
                 sql,

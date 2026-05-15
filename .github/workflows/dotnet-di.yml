@@ -1,36 +1,68 @@
-﻿name: .NET CI
+﻿name: CampusTouch Production CI/CD
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
 
 jobs:
-  build:
-
+  build-test-deploy:
     runs-on: ubuntu-latest
 
     steps:
 
-    # 🔹 1. Checkout code
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 🔹 2. Setup .NET 8
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
-    # 🔹 3. Restore dependencies
     - name: Restore dependencies
       run: dotnet restore CampusTouch.sln
 
-    # 🔹 4. Build solution
-    - name: Build project
+    - name: Build solution
       run: dotnet build CampusTouch.sln --configuration Release --no-restore
 
-    # 🔹 5. Run unit tests 🔥
-    - name: Run Tests
-      run: dotnet test CampusTouch.sln --configuration Release --no-build --verbosity normal
+    - name: Run tests
+      run: dotnet test CampusTouch.sln --configuration Release --no-build
+
+    - name: Publish API
+      run: dotnet publish CampusTouch.API/CampusTouch.API.csproj -c Release -o publish
+
+    # Clean old deployment
+    - name: Clean old files
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          rm -rf /home/ubuntu/app/*
+
+    # Upload files
+    - name: Deploy to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "publish/*"
+        target: ${{ secrets.EC2_APP_PATH }}
+        strip_components: 1
+
+    # Restart app
+    - name: Restart ASP.NET Service
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo systemctl restart campustouch
+          sudo systemctl status campustouch --no-pager
+
+    # Health check
+    - name: Check API Health
+      run: curl http://${{ secrets.EC2_HOST }}

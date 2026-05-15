@@ -108,38 +108,83 @@ namespace CampusTouch.Application.Features.Staffs.Commands
 
                 throw new NotFoundException("Staff not found");
             }
-
-            var dept = await _deptRepository.GetByIdAsync(request.DepartmentId);
-
-            if (dept == null)
+            if (request.DepartmentId.HasValue&&request.DepartmentId.Value>0)
             {
-                _logger.LogWarning(
-                    "Update failed: Department {DepartmentId} not found for Staff {StaffId} (User {UserId})",
-                    request.DepartmentId, request.Id, userId);
+                var dept = await _deptRepository.GetByIdAsync(request.DepartmentId.Value);
 
-                throw new NotFoundException("Department not found");
+                if (dept == null)
+                {
+                    _logger.LogWarning(
+                        "Update failed: Department {DepartmentId} not found for Staff {StaffId} (User {UserId})",
+                        request.DepartmentId, request.Id, userId);
+
+                    throw new NotFoundException("Department not found");
+                }
             }
 
-            if (await _staffRepository.IsPhoneNumberExist(request.PhoneNumber, request.Id))
-            {
-                _logger.LogWarning(
-                    "Duplicate phone number update attempt for Staff {StaffId} by User {UserId}",
-                    request.Id, userId);
 
-                throw new BuisnessRuleException("Phone number already exists");
+            if (
+        !string.IsNullOrWhiteSpace(
+            request.PhoneNumber)
+    )
+            {
+                var phoneExists =
+                    await _staffRepository
+                        .IsPhoneNumberExist(
+                            request.PhoneNumber,
+                            request.Id);
+
+                if (phoneExists)
+                {
+                    _logger.LogWarning(
+                        "Duplicate phone number update attempt for Staff {StaffId} by User {UserId}",
+                        request.Id,
+                        userId);
+
+                    throw new BuisnessRuleException(
+                        "Phone number already exists");
+                }
             }
+
+
 
             // 📝 Capture old values (for audit)
             var oldPhone = staff.PhoneNumber;
             var oldDepartment = staff.DepartmentId;
 
             // 📝 Update
-            staff.FirstName = request.FirstName;
-            staff.LastName = request.LastName;
-            staff.PhoneNumber = request.PhoneNumber;
-            staff.Designation = request.Designation;
-            staff.DepartmentId = request.DepartmentId;
+            staff.FirstName =
+                 request.FirstName
+                 ?? staff.FirstName;
+
+            staff.LastName =
+                request.LastName
+                ?? staff.LastName;
+
+            staff.Email =
+                request.Email
+                ?? staff.Email;
+
+            staff.PhoneNumber =
+                request.PhoneNumber
+                ?? staff.PhoneNumber;
+
+            staff.Designation =
+                request.Designation
+                ?? staff.Designation;
+
+            if (
+      request.DepartmentId.HasValue
+      &&
+      request.DepartmentId.Value > 0
+  )
+            {
+                staff.DepartmentId =
+                    request.DepartmentId.Value;
+            }
+
             staff.UpdatedAt = DateTime.UtcNow;
+
             staff.UpdatedBy = userId;
 
             var count = await _staffRepository.UpdateStaff(staff);

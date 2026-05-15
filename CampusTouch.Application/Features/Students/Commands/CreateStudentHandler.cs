@@ -158,7 +158,7 @@ namespace CampusTouch.Application.Features.Students.Commands
             var course = await _programRepository.GetByIdAsync(request.CourseId);
             var department = await _departementRepository.GetByIdAsync(request.DepartmentId);
 
-            if (course == null || department == null || course.IsDeleted || department.isDeleted)
+            if (course == null || department == null || course.IsDeleted || department.IsDeleted)
             {
                 _logger.LogWarning(
                     "Invalid course/department for student creation (User {UserId}, Course {CourseId}, Dept {DeptId})",
@@ -168,8 +168,23 @@ namespace CampusTouch.Application.Features.Students.Commands
             }
 
             // 🔢 Admission number generation
-            var sequence = await _studentRepository.GetNextAdmissionSequence(request.DepartmentId);
-            var admissionNumber = $"{department.code}{DateTime.UtcNow.Year}{sequence:D3}";
+            //var sequence = await _studentRepository.GetNextAdmissionSequence(request.DepartmentId);
+            //var admissionNumber = $"{department.code}{DateTime.UtcNow.Year}{sequence:D3}";
+            string admissionNumber;
+
+            do
+            {
+                var sequence =
+                    await _studentRepository
+                        .GetNextAdmissionSequence(request.DepartmentId);
+
+                admissionNumber =
+                    $"{department.Code}{DateTime.UtcNow.Year}{sequence:D3}";
+            }
+            while (
+                await _identityService
+                    .UserNameExists(admissionNumber)
+            );
 
             // 🔁 Duplicate check
             var exists = await _studentRepository.AdmissionNumberExist(admissionNumber);

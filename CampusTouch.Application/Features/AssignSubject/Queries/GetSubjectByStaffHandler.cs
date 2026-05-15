@@ -1,9 +1,10 @@
 ﻿using CampusTouch.Application.Common.Exceptions;
+using CampusTouch.Application.Features.AssignSubject.DTOs;
 using CampusTouch.Application.Features.AssignSubject.Queries;
 using CampusTouch.Application.Interfaces;
 using MediatR;
 
-public class GetSubjectsByStaffHandler : IRequestHandler<GetSubjectByStaffQueries, List<int>>
+public class GetSubjectsByStaffHandler : IRequestHandler<GetSubjectByStaffQueries, List<StaffSubjectDTO>>
 {
     private readonly IStaffRepository _staffRepository;
     private readonly IStaffSubjectRepository _staffSubjectRepository;
@@ -16,7 +17,7 @@ public class GetSubjectsByStaffHandler : IRequestHandler<GetSubjectByStaffQuerie
         _staffSubjectRepository = staffSubjectRepository;
     }
 
-    public async Task<List<int>> Handle(GetSubjectByStaffQueries request, CancellationToken cancellationToken)
+    public async Task<List<StaffSubjectDTO>> Handle(GetSubjectByStaffQueries request, CancellationToken cancellationToken)
     {
         var staff = await _staffRepository.GetStaffById(request.StaffId);
         if (staff == null)

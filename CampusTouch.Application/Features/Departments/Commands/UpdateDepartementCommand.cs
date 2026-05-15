@@ -7,5 +7,6 @@ using System.Threading.Tasks;
 
 namespace CampusTouch.Application.Features.Departments.Commands
 {
-    public record UpdateDepartmentCommand(int Id, string Name, string Description) : IRequest<int>;
+    public record UpdateDepartmentCommand(int Id, string? Name, string? Description) : IRequest<int>;
 }
+    

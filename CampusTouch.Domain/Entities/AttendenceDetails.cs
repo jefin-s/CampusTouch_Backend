@@ -13,6 +13,6 @@ namespace CampusTouch.Domain.Entities
         public string Remark { get; set; }
 
         public DateTime MarkedAt { get; set; }
-        public bool IsEdited { get; set; }
+        public bool IsEdited { get; set; } = false;
     }
 }

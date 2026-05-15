@@ -10,6 +10,7 @@ namespace CampusTouch.Application.Features.Attendence.DTO
     {
         public int StudentId { get; set; }
         public string Status { get; set; }
+        public string Remark { get; set; }
     }
 }
     

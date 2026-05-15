@@ -91,7 +91,7 @@ namespace CampusTouch.Application.Features.Departments.Commands
             }
 
             // 🗑 Soft delete
-            existing.isDeleted = true;
+            existing.IsDeleted = true;
             existing.IsActive = false;
             existing.DeletedAt = DateTime.UtcNow;
             existing.DeletedBy = userId;

@@ -101,7 +101,9 @@ namespace CampusTouch.Application.Features.Departments.Commands
                 Description = request.Description,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = userId
+                CreatedBy = userId,
+                Code = request.code
+
             };
 
             var departmentId = await _repository.CreateAsync(department);

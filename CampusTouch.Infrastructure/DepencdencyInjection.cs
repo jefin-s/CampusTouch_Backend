@@ -43,6 +43,7 @@ namespace CampusTouch.Infrastructure
             services.AddScoped<IAttendenceRepository, AttendenceRepository>();
             services.AddScoped<ICacheService,RedisCacheService>();
             services.AddScoped<IJWTService,JwtServices>();
+            services.AddScoped<IApplicantRepository, ApplicantRepository>();
             services.AddScoped<IDbConnection>(sp =>
             new SqlConnection(configuration.GetConnectionString("DefaultConnection")));
 

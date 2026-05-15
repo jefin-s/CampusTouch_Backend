@@ -141,7 +141,8 @@ public class CreateAttendanceHandler : IRequestHandler<CreateAttendanceCommand, 
                 AttendanceDate = request.Date,
                 ClassId = request.ClassId,
                 SubjectId = request.SubjectId,
-                StaffId = userId
+                StaffId = userId,
+                IsDeleted= false,
             };
 
             var attendanceId = await _repo.CreateAttendanceAsync(attendance, transaction);
@@ -151,7 +152,10 @@ public class CreateAttendanceHandler : IRequestHandler<CreateAttendanceCommand, 
             {
                 AttendanceId = attendanceId,
                 StudentId = s.StudentId,
-                Status = s.Status
+                Status = s.Status,
+                Remark = s.Remark,
+                MarkedAt = DateTime.UtcNow,
+                IsEdited= false
             }).ToList();
 
             await _repo.CreateAttendanceDetailsAsync(details, transaction);

@@ -8,8 +8,11 @@ using CampusTouch.Domain.Entities;
         public interface IStudentRepository
         {
 
-            Task <IEnumerable<Student>> GetAllStudents(int pageNumber,int pageSize,string Search);
-        Task<Student> GetStudentsById(int id );
+        Task<(IEnumerable<Student> Students, int TotalCount)> GetAllStudents(
+            int pageNumber,
+            int pageSize,
+            string? Search
+        ); Task<Student> GetStudentsById(int id );
         Task<int> CreateStudentAsync(Student student);
 
         Task<bool> AdmissionNumberExist(string admissionNumber);
@@ -19,5 +22,6 @@ using CampusTouch.Domain.Entities;
         Task <int> GetNextAdmissionSequence(int deptId);
 
         Task<StudentMyProfileDTO> GetStudentByUserId(string userId);
+        //Task<List<Student>> GetStudentbyName(string query);
     }
     }

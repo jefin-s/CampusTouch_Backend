@@ -23,7 +23,8 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
                 {
                     department.Name,
                     department.Description,
-                    department.CreatedBy
+                    department.CreatedBy,
+                    department.Code
                 },
                 commandType: CommandType.StoredProcedure
             );

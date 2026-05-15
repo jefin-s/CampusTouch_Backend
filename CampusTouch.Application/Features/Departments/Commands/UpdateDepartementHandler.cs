@@ -89,8 +89,13 @@ namespace CampusTouch.Application.Features.Departments.Commands
             var oldDescription = existingDepartment.Description;
 
             // 📝 Update
-            existingDepartment.Name = request.Name;
-            existingDepartment.Description = request.Description;
+            existingDepartment.Name =
+     request.Name
+     ?? existingDepartment.Name;
+
+            existingDepartment.Description =
+                request.Description
+                ?? existingDepartment.Description;
             existingDepartment.UpdatedAt = DateTime.UtcNow;
             existingDepartment.UpdatedBy = userId;
 

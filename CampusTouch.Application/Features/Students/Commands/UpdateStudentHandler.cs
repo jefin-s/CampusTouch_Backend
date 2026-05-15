@@ -126,15 +126,17 @@ namespace CampusTouch.Application.Features.Students.Commands
             }
 
             // 🔥 Duplicate check
-            var admissionExists = await _studentRepository.AdmissionNumberExist(request.AdmissionNumber);
-
-            if (admissionExists && student.Id != request.Id)
+            if (!string.IsNullOrWhiteSpace(request.AdmissionNumber))
             {
-                _logger.LogWarning(
-                    "Duplicate admission number update attempt {AdmissionNumber} for Student {StudentId} by User {UserId}",
-                    request.AdmissionNumber, request.Id, userId);
+                var admissionExists =
+                    await _studentRepository
+                    .AdmissionNumberExist(request.AdmissionNumber);
 
-                throw new BuisnessRuleException("Admission number already exists");
+                if (admissionExists && student.Id != request.Id)
+                {
+                    throw new BuisnessRuleException(
+                        "Admission number already exists");
+                }
             }
 
             // 📝 Capture old values (audit)
@@ -142,24 +144,47 @@ namespace CampusTouch.Application.Features.Students.Commands
             var oldEmail = student.Email;
 
             // 📝 Update
-            student.AdmissionNumber = request.AdmissionNumber;
-            student.CourseId = request.CourseId;
-            student.DepartmentId = request.DepartmentId;
-            student.AdmissionDate = request.AdmissionDate;
+            student.AdmissionNumber =
+    request.AdmissionNumber ?? student.AdmissionNumber;
 
-            student.FirstName = request.FirstName;
-            student.LastName = request.LastName;
-            student.DateOfBirth = request.DateOfBirth;
-            student.Gender = request.Gender;
+            student.CourseId =
+                request.CourseId ?? student.CourseId;
 
-            student.PhoneNumber = request.PhoneNumber;
-            student.Email = request.Email;
-            student.Address = request.Address;
+            student.DepartmentId =
+                request.DepartmentId ?? student.DepartmentId;
 
-            student.GuardianName = request.GuardianName;
-            student.GuardianPhone = request.GuardianPhone;
+            student.AdmissionDate =
+                request.AdmissionDate ?? student.AdmissionDate;
 
-            student.BloodGroup = request.BloodGroup;
+            student.FirstName =
+                request.FirstName ?? student.FirstName;
+
+            student.LastName =
+                request.LastName ?? student.LastName;
+
+            student.DateOfBirth =
+                request.DateOfBirth ?? student.DateOfBirth;
+
+            student.Gender =
+                request.Gender ?? student.Gender;
+
+            student.PhoneNumber =
+                request.PhoneNumber ?? student.PhoneNumber;
+
+            student.Email =
+                request.Email ?? student.Email;
+
+            student.Address =
+                request.Address ?? student.Address;
+
+            student.GuardianName =
+                request.GuardianName ?? student.GuardianName;
+
+            student.GuardianPhone =
+                request.GuardianPhone ?? student.GuardianPhone;
+
+            student.BloodGroup =
+                request.BloodGroup ?? student.BloodGroup;
             student.UpdatedBy = userId;
             student.UpdatedAt = DateTime.UtcNow;
 

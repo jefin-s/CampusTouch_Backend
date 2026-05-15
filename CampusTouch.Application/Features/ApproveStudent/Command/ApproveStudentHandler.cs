@@ -255,14 +255,14 @@ namespace CampusTouch.Application.Features.ApproveStudent.Command
                 throw new ValidationException("First name is required");
 
             // 🔢 Generate admission number safely
-            if (string.IsNullOrEmpty(department.code))
+            if (string.IsNullOrEmpty(department.Code))
                 throw new Exception("Department code missing");
 
             var sequence = await _studentRepository.GetNextAdmissionSequence(request.DepartmentId);
             if (sequence == null)
                 throw new Exception("Admission sequence generation failed");
 
-            string admissionNumber = $"{department.code}{DateTime.UtcNow.Year}{sequence:D3}";
+            string admissionNumber = $"{department.Code}{DateTime.UtcNow.Year}{sequence:D3}";
 
             if (await _studentRepository.AdmissionNumberExist(admissionNumber))
                 throw new BuisnessRuleException("Admission number already exists");

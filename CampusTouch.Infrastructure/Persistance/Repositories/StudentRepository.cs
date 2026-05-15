@@ -17,32 +17,60 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
             _dbConnection = dbConnection;
         }
 
-        public async Task<IEnumerable<Student>> GetAllStudents(int pageNumber, int pageSize, string? Search)
+        public async Task<(IEnumerable<Student> Students, int TotalCount)> GetAllStudents(
+        int pageNumber,
+        int pageSize,
+        string? Search)
         {
-
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             pageSize = pageSize > 100 ? 100 : pageSize;
-            var sql = @"select *from students  where isactive=1 
-            AND (@Search is null or  ( firstname+' '+lastname )like '%'+@Search+'%')
-           order by id  OFFSET @Offset ROWS FETCH NEXT  @PageSize ROWS ONLY";
+
+            var sql = @"
+        SELECT *
+        FROM Students
+        WHERE IsActive = 1
+        AND (
+            @Search IS NULL
+            OR (FirstName + ' ' + LastName) LIKE '%' + @Search + '%'
+        )
+        ORDER BY Id
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY;
+
+        SELECT COUNT(*)
+        FROM Students
+        WHERE IsActive = 1
+        AND (
+            @Search IS NULL
+            OR (FirstName + ' ' + LastName) LIKE '%' + @Search + '%'
+        );
+    ";
+
             var parameters = new
             {
-                Search = Search,
+                Search,
                 Offset = (pageNumber - 1) * pageSize,
                 PageSize = pageSize
             };
-            var data = await _dbConnection.QueryAsync<Student>(sql, parameters);
-            return data.ToList();
 
+            using var multi =
+                await _dbConnection.QueryMultipleAsync(sql, parameters);
+
+            var students =
+                await multi.ReadAsync<Student>();
+
+            var totalCount =
+                await multi.ReadFirstAsync<int>();
+
+            return (students.ToList(), totalCount);
+        }
+        public async Task<Student?> GetStudentsById(int id)
+        {
+            var query = "Select *from students  where id=@id";
+            var result = await _dbConnection.QueryFirstOrDefaultAsync<Student>(query, new { id = id });
+            return result;
 
         }
-            public async Task<Student?> GetStudentsById(int id)
-            {
-                var query = "Select *from students  where id=@id";
-                var result = await _dbConnection.QueryFirstOrDefaultAsync<Student>(query, new { id = id });
-                return result;
-
-            }
         public async Task<int> CreateStudentAsync(Student student)
         {
             var sql = @"INSERT INTO Students
@@ -170,6 +198,30 @@ WHERE s.UserId = @UserId AND s.IsDeleted = 0
             var result = await _dbConnection.QueryFirstOrDefaultAsync<StudentMyProfileDTO>(query, new { UserId = userId });
             return result;
         }
+
+        //public async Task<List<Student>> GetStudentbyName(string query)
+        //{
+        //    string sql = @"
+        //    SELECT TOP 20
+        //        Id,
+        //        Name,
+        //        Email,
+        //        StudentId,
+        //        Department,
+        //        ProfileImageUrl
+        //    FROM Students
+        //    WHERE Name LIKE @Search
+        //";
+
+        //    var students = await _dbConnection.QueryAsync<Student>(
+        //        sql,
+        //        new
+        //        {
+        //            Search = $"%{query}%"
+        //        });
+
+        //    return students.ToList();
+        //}
     }
 }
     

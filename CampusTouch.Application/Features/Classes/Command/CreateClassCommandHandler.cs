@@ -81,7 +81,7 @@ public class CreateClassHandler : IRequestHandler<CreateClassCommand, int>
                 "Duplicate class creation attempt by User {UserId} for Course {CourseId}, Year {Year}, Semester {Semester}",
                 userId, request.CourseId, request.Year, request.Semester);
 
-            throw new UnauthorizedException("Class already exists");
+            throw new  BuisnessRuleException("Class already exists");
         }
 
         var model = new Classes
@@ -90,7 +90,10 @@ public class CreateClassHandler : IRequestHandler<CreateClassCommand, int>
             DepartmentId = request.DepartmentId,
             CourseId = request.CourseId,
             Year = request.Year,
-            Semester = request.Semester
+            Semester = request.Semester,
+            IsActive=true
+            
+            
         };
 
         var classId = await _repo.CreateAsync(model);

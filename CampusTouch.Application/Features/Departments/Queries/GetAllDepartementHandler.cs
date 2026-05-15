@@ -28,7 +28,9 @@ namespace CampusTouch.Application.Features.Departments.Queries
             {
                 Id = x.Id,
                 Name = x.Name,
-                Description = x.Description
+                Description = x.Description,
+                Code= x.Code,
+               
             });
         }
     }

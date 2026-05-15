@@ -1,4 +1,5 @@
-﻿using CampusTouch.Domain.Entities;
+﻿using CampusTouch.Application.Features.AssignSubject.DTOs;
+using CampusTouch.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace CampusTouch.Application.Interfaces
 
         Task<bool> Exists(int staffId, int subjectId);
 
-        Task<List<int>> GetSubjectsByStaffId(int staffId);
+        Task<List<StaffSubjectDTO>> GetSubjectsByStaffId(int staffId);
 
         Task<int> RemoveAsync(int staffId, int subjectId);
 

@@ -104,18 +104,33 @@ namespace CampusTouch.Application.Features.Program.Commands
             }
 
             // 🔍 Department check
-            var department = await _departementRepository.GetByIdAsync(request.DepartmentId);
-
-            if (department == null)
+            if (
+      request.DepartmentId.HasValue
+      &&
+      request.DepartmentId.Value > 0
+  )
             {
-                _logger.LogWarning(
-                    "Update failed: Department {DepartmentId} not found for Program {ProgramId} (User {UserId})",
-                    request.DepartmentId, request.Id, userId);
+                var department =
+                    await _departementRepository
+                        .GetByIdAsync(
+                            request.DepartmentId.Value);
 
-                throw new NotFoundException("Department not found");
+                if (department == null)
+                {
+                    _logger.LogWarning(
+                        "Update failed: Department {DepartmentId} not found for Program {ProgramId} (User {UserId})",
+                        request.DepartmentId,
+                        request.Id,
+                        userId);
+
+                    throw new NotFoundException(
+                        "Department not found");
+                }
             }
 
-            var name = request.Name.Trim();
+            var name =
+     request.Name?.Trim()
+     ?? existingCourse.Name;
 
             // (Optional) capture old values for audit
             var oldName = existingCourse.Name;
@@ -123,15 +138,28 @@ namespace CampusTouch.Application.Features.Program.Commands
 
             // 📝 Update fields
             existingCourse.Name = name;
-            existingCourse.Level = request.Level;
-            existingCourse.Duration = request.Duration;
-            existingCourse.DepartmentId = request.DepartmentId;
+            existingCourse.Level =
+    request.Level
+    ?? existingCourse.Level;
+
+            existingCourse.Duration =
+                request.Duration
+                ?? existingCourse.Duration;
+            if (
+         request.DepartmentId.HasValue
+         &&
+         request.DepartmentId.Value > 0
+     )
+            {
+                existingCourse.DepartmentId =
+                    request.DepartmentId.Value;
+            }
             existingCourse.UpdatedAt = DateTime.UtcNow;
             existingCourse.UpdatedBy = userId;
 
             await _programRepository.UpdateAsync(existingCourse);
 
-            // ✅ Audit log (VERY IMPORTANT)
+            // ✅ Audit log (VERY IMPORTANT) 
             _logger.LogInformation(
                 "User {UserId} updated program {ProgramId} successfully. Name: {OldName} → {NewName}, Department: {OldDept} → {NewDept}",
                 userId, request.Id, oldName, name, oldDepartmentId, request.DepartmentId);

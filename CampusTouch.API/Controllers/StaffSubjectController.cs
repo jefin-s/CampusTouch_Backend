@@ -1,5 +1,6 @@
 ﻿using CampusTouch.Application.Common;
 using CampusTouch.Application.Features.AssignSubject.Commands;
+using CampusTouch.Application.Features.AssignSubject.DTOs;
 using CampusTouch.Application.Features.AssignSubject.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -44,7 +45,7 @@ public class StaffSubjectController : ControllerBase
             StaffId = staffId
         });
 
-        return Ok(new ApiResponse<List<int>>
+        return Ok(new ApiResponse<List<StaffSubjectDTO>>
         {
             Success = true,
             Message = "Subjects fetched successfully",

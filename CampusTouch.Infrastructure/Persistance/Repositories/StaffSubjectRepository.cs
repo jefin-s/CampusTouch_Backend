@@ -1,4 +1,5 @@
-﻿using CampusTouch.Application.Interfaces;
+﻿using CampusTouch.Application.Features.AssignSubject.DTOs;
+using CampusTouch.Application.Interfaces;
 using CampusTouch.Domain.Entities;
 using Dapper;
 using System.Data;
@@ -42,17 +43,26 @@ namespace CampusTouch.Infrastructure.Persistence.Repositories
         }
 
         // 🔥 3. Get Subjects by Staff
-        public async Task<List<int>> GetSubjectsByStaffId(int staffId)
+        public async Task<List<StaffSubjectDTO>>
+     GetSubjectsByStaffId(int staffId)
         {
             var sql = @"
-                SELECT SubjectId
-                FROM StaffSubject
-                WHERE StaffId = @StaffId";
+        SELECT
+            s.Id AS SubjectId,
+            s.Name AS SubjectName,
+            s.Code AS SubjectCode
+        FROM StaffSubject ss
+        INNER JOIN Subjects s
+            ON ss.SubjectId = s.Id
+        WHERE ss.StaffId = @StaffId";
 
-            var result = await _dbConnection.QueryAsync<int>(sql, new
-            {
-                StaffId = staffId
-            });
+            var result =
+                await _dbConnection.QueryAsync<StaffSubjectDTO>(
+                    sql,
+                    new
+                    {
+                        StaffId = staffId
+                    });
 
             return result.ToList();
         }

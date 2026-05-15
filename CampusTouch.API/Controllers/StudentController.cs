@@ -31,11 +31,11 @@ namespace CampusTouch.API.Controllers
             }
             [HttpGet]
 
-            public async Task<ActionResult<ApiResponse<IEnumerable<StudentResponseDTO>>>> GetAllStudents([FromQuery] int pageNumber=1, [FromQuery]  int pageSize = 10, [FromQuery] string?Search=null)
+            public async Task<ActionResult<ApiResponse<PaginatedResult<StudentResponseDTO>>>> GetAllStudents([FromQuery] int pageNumber=1, [FromQuery]  int pageSize = 10, [FromQuery] string?Search=null)
             {
                 var result = await _mediator.Send(new GetAllStudentsQuery(pageNumber,pageSize,Search));
                 
-               return Ok( new ApiResponse <IEnumerable <StudentResponseDTO>>
+               return Ok( new ApiResponse <PaginatedResult<StudentResponseDTO>>
                {
                      Success=true,
                    Data = result,
