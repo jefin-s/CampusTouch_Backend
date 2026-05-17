@@ -6,6 +6,7 @@ using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -70,7 +71,7 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
         }
 
         // 🔹 Check Duplicate Attendance
-        public async Task<bool> ExistsAsync(DateTime date, int classId, int subjectId)
+        public async Task<bool> ExistsAsync(DateTime date, int classId, int subjectId,int studentid)
         {
             return await _dbconnection.ExecuteScalarAsync<bool>(
                 "SP_AttendanceExists",
@@ -78,7 +79,9 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
                 {
                     AttendanceDate = date,
                     ClassId = classId,
-                    SubjectId = subjectId
+                    SubjectId = subjectId,
+                    Studentid = studentid
+                    
                 },
                 commandType: CommandType.StoredProcedure
             );
@@ -115,6 +118,55 @@ namespace CampusTouch.Infrastructure.Persistance.Repositories
         {
             var sql = @"select Id from students where userid=@userId";
             return await _dbconnection.ExecuteScalarAsync<int?>(sql, new { userId });
+        }
+        public async Task<int> GetAttendanceIdAsync(
+     DateTime attendanceDate,
+     int classId,
+     int subjectId,
+     IDbTransaction transaction)
+        {
+            var parameters = new DynamicParameters();
+
+            parameters.Add("@AttendanceDate", attendanceDate);
+            parameters.Add("@ClassId", classId);
+            parameters.Add("@SubjectId", subjectId);
+
+            var result = await _dbconnection.QueryFirstOrDefaultAsync<int>(
+                "SP_GetAttendanceId",
+                parameters,
+                transaction: transaction,
+                commandType: CommandType.StoredProcedure);
+
+            return result;
+        }
+
+        public async Task UpdateAttendanceDetailsAsync(
+    List<UpdateAttendanceStudentDTO> students,
+    int attendanceId,
+    IDbTransaction transaction)
+        {
+            var sql = @"
+    UPDATE AttendenceDetails
+    SET
+        Status = @Status,
+        Remark = @Remark,
+        IsEdited = 1,
+        MarkedAt = GETUTCDATE()
+    WHERE AttendanceId = @AttendanceId
+        AND StudentId = @StudentId";
+
+            var parameters = students.Select(s => new
+            {
+                AttendanceId = attendanceId,
+                StudentId = s.StudentId,
+                Status = s.Status,
+                Remark = s.Remark
+            });
+
+            await _dbconnection.ExecuteAsync(
+                sql,
+                parameters,
+                transaction);
         }
     }
 }

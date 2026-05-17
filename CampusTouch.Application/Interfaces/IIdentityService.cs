@@ -24,5 +24,6 @@ namespace CampusTouch.Application.Interfaces
         Task PromoteToStudentAsync(string userId);
         //Task PromoteToFacultyAsync(string userId, string departmentId);
         Task<bool> UserNameExists(string username);
+        Task ResetPasswordAsync(string userId, string newPassword);
     }
 }

@@ -183,12 +183,20 @@ namespace CampusTouch.API.Controllers
         }
 
         [HttpPost("approve-student")]
-        [Authorize(Roles ="Admin")]
-        public async Task<IActionResult> ApproveStudent(ApproveStudentCommand command)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<bool>>> ApproveStudent(
+    [FromBody] ApproveStudentCommand command)
         {
             var result = await _mediator.Send(command);
 
-            return result ? Ok("Approved") : BadRequest("Failed");
+            return Ok(new ApiResponse<bool>
+            {
+                Success = result,
+                Message = result
+                    ? "Student approved successfully"
+                    : "Student approval failed",
+                Data = result
+            });
         }
 
         [HttpGet("profile")]

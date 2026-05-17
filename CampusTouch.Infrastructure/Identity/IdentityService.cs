@@ -268,6 +268,49 @@ namespace CampusTouch.Infrastructure.Identity
 
             return user != null;
         }
+        public async Task ResetPasswordAsync(
+    string userId,
+    string newPassword)
+{
+    var user = await _userManager.FindByIdAsync(userId);
+
+    if (user == null)
+        throw new NotFoundException("User not found");
+
+    // Remove old password if exists
+    var hasPassword =
+        await _userManager.HasPasswordAsync(user);
+
+    if (hasPassword)
+    {
+        var removeResult =
+            await _userManager.RemovePasswordAsync(user);
+
+        if (!removeResult.Succeeded)
+        {
+            var errors = string.Join(
+                ", ",
+                removeResult.Errors.Select(e => e.Description)
+            );
+
+            throw new BuisnessRuleException(errors);
+        }
+    }
+
+    // Add new password
+    var addResult =
+        await _userManager.AddPasswordAsync(user, newPassword);
+
+    if (!addResult.Succeeded)
+    {
+        var errors = string.Join(
+            ", ",
+            addResult.Errors.Select(e => e.Description)
+        );
+
+        throw new BuisnessRuleException(errors);
+    }
+}
 
     }
 }

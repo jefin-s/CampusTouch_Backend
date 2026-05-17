@@ -1,4 +1,5 @@
-﻿using CampusTouch.Application.Features.Attendence.Queries;
+﻿using CampusTouch.Application.Features.Attendence.DTO;
+using CampusTouch.Application.Features.Attendence.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +19,7 @@ namespace CampusTouch.API.Controllers
         }
         [HttpPost("mark")]
         [Authorize(Roles ="Staff")]
-        public async Task<IActionResult> MarkAttendance(CreateAttendanceCommand command)
+        public async Task<ActionResult<CreateAttendenceResponseDTO>> MarkAttendance(CreateAttendanceCommand command)
         {
             var result = await _mediator.Send(command);
             return Ok(result);
@@ -38,6 +39,18 @@ namespace CampusTouch.API.Controllers
         {
             var result = await _mediator.Send(new GetMyattendencequery());
             return Ok(result);
+        }
+        [HttpPut("update-attendance")]
+        [Authorize(Roles ="Staff")]
+        public async Task<IActionResult> UpdateAttendance(
+    UpdateAttendanceCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (!result)
+                return BadRequest();
+
+            return Ok("Attendance updated successfully");
         }
     }
 }

@@ -15,11 +15,20 @@ namespace CampusTouch.Application.Interfaces
 
         Task CreateAttendanceDetailsAsync(List<AttendenceDetails> details, IDbTransaction transaction);
 
-        Task<bool> ExistsAsync(DateTime date, int classId, int subjectId);
+        Task<bool> ExistsAsync(DateTime date, int classId, int subjectId,int studentid);
         Task<List<AttendenceViewDto>> GetAttendanceByClassAsync(int classId, DateTime date);
 
         Task<List<AttendenceViewDto>> GetAttendenceByStudentId(int studentId);
 
         Task<int?> GetStudentIdByUserIdAsync(string userId);
+        Task<int> GetAttendanceIdAsync(
+    DateTime attendanceDate,
+    int classId,
+    int subjectId,IDbTransaction transaction);
+
+        Task UpdateAttendanceDetailsAsync(
+    List<UpdateAttendanceStudentDTO> students,
+    int attendanceId,
+    IDbTransaction transaction);
     }
 }
